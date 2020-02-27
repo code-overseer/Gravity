@@ -6,7 +6,7 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
 
     int idx = 0;
     bool will_loop = true;
-    AABB current = Root_box;
+    AABB aabb = Root_box;
     while (will_loop) {
         auto old_data = data[idx];
         data[idx].mass += mass;
@@ -24,13 +24,13 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
                 auto d = nodes[idx].depth + 1;
                 for (int i = 0; i < 4; ++i) nodes.emplace_back(d);
                 for (int i = 0; i < 4; ++i) data.emplace_back();
-                auto o = current.quadrant_index(old_data.centre);
-                auto n = current.quadrant_index(pos);
+                auto o = aabb.quadrant_index(old_data.centre);
+                auto n = aabb.quadrant_index(pos);
                 if (o.first == n.first) {
                     idx = nodes[idx].first_child + n.first;
                     data[idx] = old_data;
                     nodes[idx].type = External;
-                    current = n.second;
+                    aabb = n.second;
                     break;
                 }
                 auto nid = nodes[idx].first_child + n.first;
@@ -43,8 +43,8 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
                 break;
             }
             case Internal: {
-                auto n = current.quadrant_index(pos);
-                current = n.second;
+                auto n = aabb.quadrant_index(pos);
+                aabb = n.second;
                 idx = nodes[idx].first_child + n.first;
                 break;
             }
