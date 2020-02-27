@@ -5,56 +5,49 @@
 void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
 
     int idx = 0;
-    bool will_loop = true;
     AABB aabb = Root_box;
-    while (will_loop) {
-        auto old_data = data[idx];
+    while (nodes[idx].first_child > 0) {
         data[idx].mass += mass;
         auto tmp = mass / data[idx].mass;
         data[idx].centre = (data[idx].centre * (1 - tmp)) + (tmp * pos);
-        switch (nodes[idx].type) {
-            case Empty: {
-                nodes[idx].type = External;
-                will_loop = false;
-                break;
-            }
-            case External: {
-                nodes[idx].type = Internal;
-                nodes[idx].first_child = nodes.size();
-                auto d = nodes[idx].depth + 1;
-                for (int i = 0; i < 4; ++i) nodes.emplace_back(d);
-                for (int i = 0; i < 4; ++i) data.emplace_back();
-                auto o = aabb.quadrant_index(old_data.centre);
-                auto n = aabb.quadrant_index(pos);
-                if (o.first == n.first) {
-                    idx = nodes[idx].first_child + n.first;
-                    data[idx] = old_data;
-                    nodes[idx].type = External;
-                    aabb = n.second;
-                    break;
-                }
-                auto nid = nodes[idx].first_child + n.first;
-                auto oid = nodes[idx].first_child + o.first;
-                data[nid] = {mass, pos};
-                data[oid] = old_data;
-                nodes[nid].type = External;
-                nodes[oid].type = External;
-                will_loop = false;
-                break;
-            }
-            case Internal: {
-                auto n = aabb.quadrant_index(pos);
-                aabb = n.second;
-                idx = nodes[idx].first_child + n.first;
-                break;
-            }
-        }
-
+        auto mid = aabb.centre();
+        auto n = aabb.quadrant_idx(pos, mid);
+        aabb = aabb.build_quadrant(n, mid);
+        idx = nodes[idx].first_child + n;
     }
-
+    if (data[idx].isEmpty()) {
+        data[idx].mass.val = mass;
+        data[idx].centre = pos;
+        return;
+    }
+    static std::vector<int> update;
+    int n = idx,o = idx;
+    while (n == o) {
+        update.emplace_back(n);
+        auto mid = aabb.centre();
+        nodes[n].first_child = nodes.size();
+        auto d = nodes[n].depth + 1;
+        for (int i = 0; i < 4; ++i) nodes.emplace_back(d);
+        for (int i = 0; i < 4; ++i) data.emplace_back();
+        o = nodes[n].first_child + aabb.quadrant_idx(data[idx].centre, mid);
+        auto t =aabb.quadrant_idx(pos, mid);
+        n = nodes[n].first_child + t;
+        aabb = aabb.build_quadrant(t, mid);
+    }
+    data[n] = {mass, pos};
+    data[o] = data[idx];
+    data[idx].mass.val += mass;
+    auto r = mass / data[idx].mass;
+    data[idx].centre = data[idx].centre * (1 - r) + pos * r;
+    for (size_t i = 1; i < update.size(); ++i) {
+        data[update[i]] = data[idx];
+    }
+    update.clear();
 }
 
 void gravity::BH_QuadTree::clear() {
     nodes.clear();
     data.clear();
+    nodes.emplace_back(0);
+    data.emplace_back();
 }

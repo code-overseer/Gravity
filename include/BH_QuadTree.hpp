@@ -12,10 +12,22 @@ namespace gravity {
         enum NodeType : unsigned short { Empty, External, Internal };
         struct BH_Node {
             struct Data {
+                union Mass {
+                    float val = 0;
+                    unsigned int bits;
+                    Mass(float const &f) : val(f) {}
+                    Mass() = default;
+                    operator float() const { return val; }
+                    Mass& operator+=(float const &f) { val += f; return *this; }
+                    Mass& operator-=(float const &f) { val -= f; return *this; }
+                    Mass& operator*=(float const &f) { val *= f; return *this; }
+                    Mass& operator/=(float const &f) { val /= f; return *this; }
+                };
                 mathsimd::float2 centre{0,0};
-                float mass = 0;
+                Mass mass;
                 Data() = default;
                 Data(float mass, mathsimd::float2 const &pos) : mass(mass), centre(pos) {};
+                [[nodiscard]] inline bool isEmpty() const { return !(0u ^ mass.bits); }
             };
             int first_child = INT32_MIN;
             NodeType type = Empty;
