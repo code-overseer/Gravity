@@ -27,18 +27,21 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
                 auto o = current.quadrant_index(old_data.centre);
                 auto n = current.quadrant_index(pos);
                 if (o.first == n.first) {
-                    data[n.first] = old_data;
-                    data[n.first].type = External;
-                    current = n.second;
                     idx = nodes[idx].first_child + n.first;
+                    data[idx].mass = old_data.mass;
+                    data[idx].centre = old_data.centre;
+                    data[idx].type = External;
+                    current = n.second;
                     break;
                 }
-                data[n.first].mass = mass;
-                data[n.first].centre = pos;
-                data[n.first].type = External;
-                data[o.first].mass = old_data.mass;
-                data[o.first].centre = old_data.centre;
-                data[o.first].type = External;
+                auto nid = nodes[idx].first_child + n.first;
+                auto oid = nodes[idx].first_child + o.first;
+                data[nid].mass = mass;
+                data[nid].centre = pos;
+                data[nid].type = External;
+                data[oid].mass = old_data.mass;
+                data[oid].centre = old_data.centre;
+                data[oid].type = External;
                 will_loop = false;
                 break;
             }

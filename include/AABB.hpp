@@ -31,14 +31,14 @@ struct AABB {
                 output.second.min = mid;
                 break;
             case 0xf0:
-                output.first = 0;
-                output.second.min.y() = mid.y();
-                output.second.max.x() = mid.x();
-                break;
-            case 0x0f:
                 output.first = 3;
                 output.second.min.x() = mid.x();
                 output.second.max.y() = mid.y();
+                break;
+            case 0x0f:
+                output.first = 0;
+                output.second.min.y() = mid.y();
+                output.second.max.x() = mid.x();
                 break;
         }
         return output;
