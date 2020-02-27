@@ -11,15 +11,16 @@ namespace gravity {
     struct BH_QuadTree {
         enum NodeType : unsigned short { Empty, External, Internal };
         struct BH_Node {
-            struct alignas(16) Data {
+            struct Data {
                 mathsimd::float2 centre{0,0};
                 float mass = 0;
-                NodeType type = Empty;
-                unsigned short depth;
-                explicit Data(unsigned short d) : depth(d) {}
+                Data() = default;
+                Data(float mass, mathsimd::float2 const &pos) : mass(mass), centre(pos) {};
             };
             int first_child = INT32_MIN;
-            BH_Node() = default;
+            NodeType type = Empty;
+            unsigned short depth;
+            explicit BH_Node(unsigned short d) : depth(d) {}
         };
 
         std::vector<BH_Node> nodes;
@@ -32,8 +33,8 @@ namespace gravity {
             count += ((count & (count - 1)) == 0);
             nodes.reserve(count);
             data.reserve(count);
-            nodes.emplace_back();
-            data.emplace_back(0);
+            nodes.emplace_back(0);
+            data.emplace_back();
         }
 
         void insert(const mathsimd::float2& pos, float mass);

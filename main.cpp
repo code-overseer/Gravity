@@ -7,6 +7,7 @@
 
 constexpr int SEED = 2324314;
 constexpr unsigned int VALUES = 10000u;
+constexpr unsigned int TESTS = 1000u;
 
 static float rnd(float min = 0.f, float max = 1.f) {
     static std::default_random_engine engine(SEED);
@@ -36,32 +37,36 @@ static std::array<float,VALUES>& generate_masses() {
     return test_cases;
 }
 
-
-int main() {
+double test_qtree() {
     using namespace gravity;
     auto pos = generate_positions();
     auto m = generate_masses();
     BH_QuadTree tree(0.025f, AABB(-100,-100,100,100), VALUES<<2u);
     using namespace std::chrono;
-
+    double total;
     auto start = high_resolution_clock::now();
     for (int i = 0; i < VALUES; ++i) {
-        tree.insert(pos[i],m[i]);
+        tree.insert(pos[i], m[i]);
     }
     auto elapsed = high_resolution_clock::now() - start;
-    printf("Quad tree insertion Elapsed in us: %f\n", static_cast<double>(duration_cast<microseconds>(elapsed).count()));
+    total = static_cast<double>(duration_cast<microseconds>(elapsed).count());
+//    printf("Quad tree insertion Elapsed in us: %f\n",  total);
     float val = 0;
-    for (auto& i: tree.data) {
-        val += i.mass;
-    }
-    printf("Total mass: %f\n", val);
-    printf("Centre of mass: %f,%f\n", tree.data[0].centre.x(), tree.data[0].centre.y());
-    printf("vector length: %lu\n", tree.data.size());
-    using Data = BH_QuadTree::BH_Node::Data;
-    auto x = std::max_element(tree.data.begin(), tree.data.end(),[](Data const&a, Data const&b) {
-       return a.depth < b.depth;
-    });
-    printf("tree depth: %i\n", x->depth);
+    for (auto& i: tree.data) { val += i.mass; }
+//    printf("%f ", val);
+//    printf("Centre of mass: %f,%f\n", tree.data[0].centre.x(), tree.data[0].centre.y());
+//    printf("vector length: %lu\n", tree.data.size());
 
+    return total;
+}
+
+
+int main() {
+
+    double time = 0.0;
+    for (int i = 0; i < TESTS; ++i) {
+        time += test_qtree();
+    }
+    printf("Time: %f us\n", time / TESTS);
     return 0;
 }
