@@ -1,12 +1,12 @@
 #include <iostream>
 #include "include/BH_QuadTree.hpp"
 #include <mathsimd.hpp>
-#include <immintrin.h>
+#include <algorithm>
 #include <chrono>
 #include <random>
 
-constexpr int SEED = 2322;
-constexpr unsigned int VALUES = 1000u;
+constexpr int SEED = 2324314;
+constexpr unsigned int VALUES = 10000u;
 
 static float rnd(float min = 0.f, float max = 1.f) {
     static std::default_random_engine engine(SEED);
@@ -49,7 +49,7 @@ int main() {
         tree.insert(pos[i],m[i]);
     }
     auto elapsed = high_resolution_clock::now() - start;
-    printf("Quad tree insertion Elapsed in ms: %f\n", static_cast<double>(duration_cast<milliseconds>(elapsed).count()));
+    printf("Quad tree insertion Elapsed in us: %f\n", static_cast<double>(duration_cast<microseconds>(elapsed).count()));
     float val = 0;
     for (auto& i: tree.data) {
         val += i.mass;
@@ -57,6 +57,11 @@ int main() {
     printf("Total mass: %f\n", val);
     printf("Centre of mass: %f,%f\n", tree.data[0].centre.x(), tree.data[0].centre.y());
     printf("vector length: %lu\n", tree.data.size());
+    using Data = BH_QuadTree::BH_Node::Data;
+    auto x = std::max_element(tree.data.begin(), tree.data.end(),[](Data const&a, Data const&b) {
+       return a.depth < b.depth;
+    });
+    printf("tree depth: %i\n", x->depth);
 
     return 0;
 }
