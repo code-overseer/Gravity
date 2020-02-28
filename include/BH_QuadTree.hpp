@@ -9,7 +9,6 @@
 namespace gravity {
 
     struct BH_QuadTree {
-        enum NodeType : unsigned short { Empty, External, Internal };
         struct BH_Node {
             struct Data {
                 union Mass {
@@ -30,9 +29,7 @@ namespace gravity {
                 [[nodiscard]] inline bool isEmpty() const { return !(0u ^ mass.bits); }
             };
             int first_child = INT32_MIN;
-            NodeType type = Empty;
-            unsigned short depth;
-            explicit BH_Node(unsigned short d) : depth(d) {}
+            BH_Node() = default;
         };
 
         std::vector<BH_Node> nodes;
@@ -45,7 +42,7 @@ namespace gravity {
             count += ((count & (count - 1)) == 0);
             nodes.reserve(count);
             data.reserve(count);
-            nodes.emplace_back(0);
+            nodes.emplace_back();
             data.emplace_back();
         }
 

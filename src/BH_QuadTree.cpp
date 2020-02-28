@@ -26,8 +26,7 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
         update.emplace_back(n);
         auto mid = aabb.centre();
         nodes[n].first_child = nodes.size();
-        auto d = nodes[n].depth + 1;
-        for (int i = 0; i < 4; ++i) nodes.emplace_back(d);
+        for (int i = 0; i < 4; ++i) nodes.emplace_back();
         for (int i = 0; i < 4; ++i) data.emplace_back();
         o = nodes[n].first_child + aabb.quadrant_idx(data[idx].centre, mid);
         auto t =aabb.quadrant_idx(pos, mid);
@@ -48,6 +47,6 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
 void gravity::BH_QuadTree::clear() {
     nodes.clear();
     data.clear();
-    nodes.emplace_back(0);
+    nodes.emplace_back();
     data.emplace_back();
 }
