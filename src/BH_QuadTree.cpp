@@ -20,7 +20,7 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
         data[idx].centre = pos;
         return;
     }
-    static std::vector<int> update;
+
     int n = idx,o = idx;
     while (n == o) {
         update.emplace_back(n);

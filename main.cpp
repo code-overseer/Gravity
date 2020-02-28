@@ -5,8 +5,8 @@
 #include <algorithm>
 #include <chrono>
 #include <random.hpp>
-#include <thread>
 #include <entt/entt.hpp>
+#include <taskflow.hpp>
 
 constexpr int SEED = 2324314;
 constexpr unsigned int VALUES = 10000u;
@@ -63,12 +63,14 @@ double test_qtree(gravity::BH_QuadTree & tree) {
 static std::array<int, N_CELLS> group(std::array<mathsimd::float2,VALUES>& pos, Grid const& grid) {
     std::array<int, N_CELLS> count{};
     memset(count.data(),0, N_CELLS*sizeof(int));
+    using namespace std::chrono;
     for (auto const&i : pos) {
         int idx = grid.getIndex(i);
         ++count[idx];
     }
+
     std::exclusive_scan(count.begin(), count.end(), count.begin(), 0);
-    for (int i = 15; i >= 0; --i) {
+    for (int i = pos.size() - 1; i >= 0; --i) {
         auto& val = pos[i];
         auto key = grid.getIndex(val);
         int j = count[key];
@@ -96,18 +98,24 @@ double test_grid(Grid & grid) {
     auto pos = generate_positions();
     auto mass = generate_masses();
     using namespace std::chrono;
+    static tf::Executor executor;
+
     auto ends = group(pos, grid);
+
     double total;
     auto start = high_resolution_clock::now();
+    tf::Taskflow taskflow;
 
-    std::thread threads[7];
-    for (int i = 1; i < 8; ++i) {
-        auto p = pos.begin() + ends[i-1];
-        auto m = mass.begin() + ends[i-1];
-        threads[i - 1] = std::thread(insertion, &grid.tree(i), p, m, ends[i] - ends[i - 1]);
+    for (int i = 0; i < N_CELLS; ++i) {
+        auto p = pos.begin() + ((i == 0) ? 0 : ends[i-1]);
+        auto m = mass.begin() + ((i == 0) ? 0 : ends[i-1]);
+        BH_QuadTree* tree = &grid.tree(i);
+        auto l = ends[i] - ((i == 0) ? 0 : ends[i-1]);
+        taskflow.emplace([tree,p,m,l]() { for (int i = 0; i < l; ++i) tree->insert(p[i],m[i]); });
     }
-    insertion(&grid.tree(0), pos.begin(), mass.begin(), ends[0]);
-    for (auto &th : threads) th.join();
+
+    executor.run(taskflow);
+    executor.wait_for_all();
     auto elapsed = high_resolution_clock::now() - start;
     total = static_cast<double>(duration_cast<microseconds>(elapsed).count());
 
@@ -116,14 +124,29 @@ double test_grid(Grid & grid) {
 }
 
 int main() {
-    Grid grid(WORLD, VALUES, 0.025f);
-//    double time = 0.0;
-//    gravity::BH_QuadTree tree(0.025f, WORLD, VALUES<<2u);
-//    for (int i = 0; i < TESTS; ++i) {
-//        time += test_grid(grid);
-//        tree.clear();
-//    }
-//    printf("Time: %f us\n", time / TESTS);
-    printf("Time: %f us\n", test_grid(grid));
+
+    {
+        gravity::BH_QuadTree tree(0.025f, WORLD, VALUES << 2u);
+        double seq_time = 0.0;
+        for (int i = 0; i < TESTS; ++i) {
+            seq_time += test_qtree(tree);
+            tree.clear();
+        }
+        printf("Sequential Time: %f us\n", seq_time / TESTS);
+    }
+    {
+        Grid grid(WORLD, VALUES, 0.025f);
+        double par_time = 0.0;
+        for (int i = 0; i < TESTS; ++i) {
+            par_time += test_grid(grid);
+            grid.clear();
+        }
+
+        printf("Parallel Time: %f us\n", par_time / TESTS);
+
+    }
+
+
+
     return 0;
 }

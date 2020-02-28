@@ -34,6 +34,7 @@ namespace gravity {
 
         std::vector<BH_Node> nodes;
         std::vector<BH_Node::Data> data;
+        std::vector<int> update;
         float const SqrTheta;
         AABB const Root_box;
         BH_QuadTree(BH_QuadTree const& other) = delete;
@@ -44,6 +45,7 @@ namespace gravity {
             data.reserve(count);
             nodes.emplace_back();
             data.emplace_back();
+            update.reserve(127);
         }
 
         void insert(const mathsimd::float2& pos, float mass);
