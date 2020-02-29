@@ -8,13 +8,14 @@
 #include <entt/entt.hpp>
 #include <taskflow.hpp>
 
-constexpr int SEED = 2324314;
+
+constexpr int SEED = 7532;
 constexpr unsigned int VALUES = 10000u;
 constexpr unsigned int TESTS = 1000u;
 constexpr unsigned int GRID_H = 4u;
 constexpr unsigned int GRID_V = 2u;
 constexpr unsigned int N_CELLS = GRID_H*GRID_V;
-const gravity::AABB WORLD(-100,-100,100,100); // WORLD
+const gravity::AABB WORLD(-1000,-1000,1000,1000); // WORLD
 static mathsimd::Random r(SEED);
 using Grid = gravity::BH_Grid<GRID_H, GRID_V>;
 
@@ -53,17 +54,13 @@ double test_qtree(gravity::BH_QuadTree & tree) {
     auto elapsed = high_resolution_clock::now() - start;
     total = static_cast<double>(duration_cast<microseconds>(elapsed).count());
 
-    float val = 0;
-    for (auto& i: tree.data) { val += i.mass; }
-
-
     return total;
 }
 
 static std::array<int, N_CELLS> group(std::array<mathsimd::float2,VALUES>& pos, Grid const& grid) {
     std::array<int, N_CELLS> count{};
     memset(count.data(),0, N_CELLS*sizeof(int));
-    using namespace std::chrono;
+
     for (auto const&i : pos) {
         int idx = grid.getIndex(i);
         ++count[idx];
@@ -86,6 +83,16 @@ static std::array<int, N_CELLS> group(std::array<mathsimd::float2,VALUES>& pos, 
     }
     return count;
 }
+static std::array<int, N_CELLS> count(std::array<mathsimd::float2,VALUES>& pos, Grid const& grid) {
+    std::array<int, N_CELLS> count{};
+    memset(count.data(),0, N_CELLS*sizeof(int));
+    for (auto const&i : pos) {
+        int idx = grid.getIndex(i);
+        ++count[idx];
+    }
+    std::inclusive_scan(count.begin(), count.end(), count.begin());
+    return count;
+}
 
 void insertion(gravity::BH_QuadTree *tree, mathsimd::float2 const* pos, float const* mass, int n) {
     for (int i = 0; i < n; ++i) {
@@ -99,12 +106,11 @@ double test_grid(Grid & grid) {
     auto mass = generate_masses();
     using namespace std::chrono;
     static tf::Executor executor;
-
-    auto ends = group(pos, grid);
-
+    static tf::Taskflow taskflow;
     double total;
     auto start = high_resolution_clock::now();
-    tf::Taskflow taskflow;
+    auto ends = group(pos, grid);
+//    auto elapsed = high_resolution_clock::now() - start;
 
     for (int i = 0; i < N_CELLS; ++i) {
         auto p = pos.begin() + ((i == 0) ? 0 : ends[i-1]);
@@ -116,6 +122,7 @@ double test_grid(Grid & grid) {
 
     executor.run(taskflow);
     executor.wait_for_all();
+    taskflow.clear();
     auto elapsed = high_resolution_clock::now() - start;
     total = static_cast<double>(duration_cast<microseconds>(elapsed).count());
 
@@ -125,15 +132,15 @@ double test_grid(Grid & grid) {
 
 int main() {
 
-    {
-        gravity::BH_QuadTree tree(0.025f, WORLD, VALUES << 2u);
-        double seq_time = 0.0;
-        for (int i = 0; i < TESTS; ++i) {
-            seq_time += test_qtree(tree);
-            tree.clear();
-        }
-        printf("Sequential Time: %f us\n", seq_time / TESTS);
-    }
+//    {
+//        gravity::BH_QuadTree tree(0.025f, WORLD, VALUES << 2u);
+//        double seq_time = 0.0;
+//        for (int i = 0; i < TESTS; ++i) {
+//            seq_time += test_qtree(tree);
+//            tree.clear();
+//        }
+//        printf("Sequential Time: %f us\n", seq_time / TESTS);
+//    }
     {
         Grid grid(WORLD, VALUES, 0.025f);
         double par_time = 0.0;
@@ -145,7 +152,7 @@ int main() {
         printf("Parallel Time: %f us\n", par_time / TESTS);
 
     }
-
+    entt::registry reg;
 
 
     return 0;
