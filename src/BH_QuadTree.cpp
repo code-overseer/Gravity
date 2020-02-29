@@ -5,45 +5,31 @@
 void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
 
     int idx = 0;
-    AABB aabb = Root_box;
     while (nodes[idx].first_child > 0) {
         nodes[idx].mass += mass;
         auto tmp = mass / nodes[idx].mass;
         nodes[idx].centre = (nodes[idx].centre * (1 - tmp)) + (tmp * pos);
-        auto mid = aabb.centre();
-        auto n = aabb.quadrant_idx(pos, mid);
-        aabb = aabb.build_quadrant(n, mid);
-        idx = nodes[idx].first_child + n;
+        idx = nodes[idx].first_child + nodes[idx].box.quadrant_idx(pos, nodes[idx].mid);
     }
-    if (nodes[idx].isEmpty()) {
-        nodes[idx].mass.val = mass;
-        nodes[idx].centre = pos;
-        return;
+    if (!nodes[idx].isEmpty()) {
+        nodes[idx].first_child = nodes.size();
+        nodes[idx].mid = nodes[idx].centre + 0.5f * (pos - nodes[idx].centre);
+        for (int i = 0; i < 4; ++i) nodes.emplace_back(nodes[idx].box.build_quadrant(i, nodes[idx].mid));
+        auto n = nodes[idx].box.quadrant_idx(pos, nodes[idx].mid) + nodes[idx].first_child;
+        auto o = nodes[idx].box.quadrant_idx(nodes[idx].centre, nodes[idx].mid) + nodes[idx].first_child;
+        nodes[n].mass.val = mass;
+        nodes[n].centre = pos;
+        nodes[o].mass.val = nodes[idx].mass.val;
+        nodes[o].centre = nodes[idx].centre;
     }
 
-    int n = idx,o = idx;
-    while (n == o) {
-        update.emplace_back(n);
-        auto mid = aabb.centre();
-        nodes[n].first_child = nodes.size();
-        for (int i = 0; i < 4; ++i) nodes.emplace_back();
-        o = nodes[n].first_child + aabb.quadrant_idx(nodes[idx].centre, mid);
-        auto t =aabb.quadrant_idx(pos, mid);
-        n = nodes[n].first_child + t;
-        aabb = aabb.build_quadrant(t, mid);
-    }
-    nodes[n] = {mass, pos};
-    nodes[o] = nodes[idx];
     nodes[idx].mass.val += mass;
     auto r = mass / nodes[idx].mass;
     nodes[idx].centre = nodes[idx].centre * (1 - r) + pos * r;
-    for (size_t i = 1; i < update.size(); ++i) {
-        nodes[update[i]] = nodes[idx];
-    }
-    update.clear();
 }
 
 void gravity::BH_QuadTree::clear() {
+    auto b = nodes[0].box;
     nodes.clear();
-    nodes.emplace_back();
+    nodes.emplace_back(b);
 }

@@ -22,23 +22,24 @@ namespace gravity {
                 Mass& operator/=(float const &f) { val /= f; return *this; }
             };
             mathsimd::float2 centre{0,0};
+            mathsimd::float2 mid{0,0};
+            AABB box;
             Mass mass;
             int first_child = INT32_MIN;
-            BH_Node() = default;
-            BH_Node(float mass, mathsimd::float2 const &pos) : mass(mass), centre(pos) {};
+            explicit BH_Node(AABB box) : box(std::move(box)) {};
+            BH_Node(AABB box, float mass, mathsimd::float2 const &pos) : box(std::move(box)), mass(mass), centre(pos) {};
+            BH_Node(BH_Node const &other) = default;
+            BH_Node(BH_Node &&other) = default;
             [[nodiscard]] inline bool isEmpty() const { return !(0u ^ mass.bits); }
         };
 
         std::vector<BH_Node> nodes;
-        std::vector<int> update;
         float const SqrTheta;
-        AABB const Root_box;
         BH_QuadTree(BH_QuadTree const& other) = delete;
-        BH_QuadTree(BH_QuadTree&& other) noexcept : SqrTheta(other.SqrTheta), Root_box(other.Root_box), nodes(std::move(other.nodes)) {}
-        BH_QuadTree(float t_sqr, AABB aabb, unsigned int count) : SqrTheta(t_sqr), Root_box(std::move(aabb)) {
+        BH_QuadTree(BH_QuadTree&& other) noexcept : SqrTheta(other.SqrTheta), nodes(std::move(other.nodes)) {}
+        BH_QuadTree(float t_sqr, AABB aabb, unsigned int count) : SqrTheta(t_sqr) {
             nodes.reserve(count);
-            nodes.emplace_back();
-            update.reserve(127);
+            nodes.emplace_back(std::move(aabb));
         }
 
         void insert(const mathsimd::float2& pos, float mass);
