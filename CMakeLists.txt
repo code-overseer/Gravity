@@ -9,4 +9,4 @@ INCLUDE_DIRECTORIES(/usr/local/opt/taskflow
         /usr/local/opt/entt/include
         /usr/local/opt/mathsimd)
 
-add_executable(Gravity main.cpp src/BH_QuadTree.cpp)
+add_executable(Gravity main.cpp src/BH_QuadTree.cpp src/BH_Tests.cpp include/BH_Tests.hpp)
