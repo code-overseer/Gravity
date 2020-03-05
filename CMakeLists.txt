@@ -7,6 +7,13 @@ find_package(Threads REQUIRED)
 
 INCLUDE_DIRECTORIES(/usr/local/opt/taskflow
         /usr/local/opt/entt/include
-        /usr/local/opt/mathsimd)
+        /usr/local/opt/mathsimd
+        /usr/local/opt/mtl_cpp/include)
 
-add_executable(Gravity main.cpp src/BH_QuadTree.cpp src/BH_Tests.cpp include/BH_Tests.hpp src/World.cpp include/World.hpp include/components/components.hpp)
+add_executable(Gravity main.cpp
+        src/BH_QuadTree.cpp
+        src/BH_Tests.cpp
+        include/BH_Tests.hpp
+        src/World.cpp
+        include/World.hpp
+        include/components/components.hpp src/Camera.cpp include/Camera.hpp include/Mesh.hpp src/Mesh.cpp)

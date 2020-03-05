@@ -24,7 +24,7 @@ int gravity::World::_gravityCellIndex(mathsimd::float2 p) {
     return static_cast<int>(dot(p, {1, static_cast<float>(2)}));
 }
 
-void gravity::World::_initializeParticles() {
+void gravity::World::initializeParticles() {
     using namespace components;
     using namespace mathsimd;
     std::vector<entt::entity> entities(10000);
@@ -68,6 +68,7 @@ void gravity::World::_initializeParticles() {
         _registry.assign<Velocity>(e, 0,0);
         _registry.assign<CircleCollider>(e, _rand.rnd(1.f,15.f));
         _registry.assign<Mass>(e, _rand.rnd(1.f,100.f));
+        _registry.assign<Restitution>(e, _rand.rnd(0.5f,1.f));
         ++i;
     }
 

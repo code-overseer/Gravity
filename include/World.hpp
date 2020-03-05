@@ -12,10 +12,10 @@ namespace gravity {
         entt::registry _registry;
         mathsimd::Random _rand{1234};
         const AABB _bounds{-1000,-1000,1000,1000};
-        void _initializeParticles();
         int _gravityCellIndex(mathsimd::float2 p);
 
     public:
+        void initializeParticles();
         World() = default;
         void update();
     };

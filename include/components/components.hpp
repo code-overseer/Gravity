@@ -18,6 +18,7 @@ namespace gravity::components {
     struct CircleCollider {
         float radius;
         explicit CircleCollider(float r) : radius(r) {}
+        AABB toAABB(mathsimd::float2 const&pos) { return AABB{pos - radius, pos + radius};}
         operator float() { return radius; }
     };
     struct Mass {
@@ -25,10 +26,23 @@ namespace gravity::components {
         explicit Mass(float m) : val(m) {}
         operator float() { return val; }
     };
+    struct Restitution {
+        float val;
+        explicit Restitution(float e) : val(e) {}
+        operator float() { return val; }
+    };
+    struct LocalToWorld {
+        mathsimd::float4x4 val;
+        LocalToWorld(mathsimd::float4x4 const &translation, mathsimd::float4x4 const &rotation, mathsimd::float4x4 const &scale) {
+            val = mathsimd::matmul(mathsimd::matmul(translation, rotation), scale);
+        }
+        explicit LocalToWorld(mathsimd::float2 const &position) {
+            using namespace mathsimd;
+            auto tmp = float4(position.x(), position.y(), 0, 1);
+            val = float4x4(float4::right(), float4::up(), float4::forward(), tmp);
+        }
+    };
 
 }
-
-
-
 
 #endif //GRAVITY_COMPONENTS_HPP

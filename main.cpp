@@ -2,6 +2,7 @@
 #include "include/BH_Tests.hpp"
 #include <entt/entt.hpp>
 #include <taskflow.hpp>
+#include "include/World.hpp"
 
 static void tests() {
     using namespace gravity;
@@ -27,7 +28,8 @@ static void tests() {
 }
 
 int main() {
-
+    gravity::World w;
+    w.initializeParticles();
 
 
     return 0;
