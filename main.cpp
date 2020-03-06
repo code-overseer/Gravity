@@ -3,7 +3,10 @@
 #include <entt/entt.hpp>
 #include <taskflow.hpp>
 #include "include/World.hpp"
-
+#include <chrono>
+extern "C" {
+#include <Cocoa_API.h>
+}
 static void tests() {
     using namespace gravity;
     {
@@ -26,10 +29,22 @@ static void tests() {
 
     }
 }
-
+static gravity::Renderer r = gravity::Renderer();
 int main() {
+    using namespace std::chrono;
     gravity::World w;
     w.initializeParticles();
+    launch_app();
+    bool u = true;
+    auto now = std::chrono::high_resolution_clock::now();
+    while (u) {
+        w.update();
+        auto elapsed = high_resolution_clock::now() - now;
+        if (static_cast<double>(duration_cast<microseconds>(elapsed).count())*1000 < 16.6) continue;
+        now = std::chrono::high_resolution_clock::now();
+        w.preDraw(r);
+        update_view(&u);
+    }
 
 
     return 0;

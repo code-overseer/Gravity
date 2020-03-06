@@ -10,17 +10,23 @@ INCLUDE_DIRECTORIES(/usr/local/opt/taskflow
         /usr/local/opt/mathsimd
         /usr/local/opt/mtl_cpp/include)
 add_definitions(-DSHADER_SOURCE="${CMAKE_SOURCE_DIR}/src/shader.metal")
-add_executable(Gravity main.cpp
+add_executable(${PROJECT_NAME} main.cpp
         src/BH_QuadTree.cpp
         src/BH_Tests.cpp
         include/BH_Tests.hpp
         src/World.cpp
         include/World.hpp
-        include/components/components.hpp
-        src/Camera.cpp
+        include/components.hpp
         include/Camera.hpp
         include/Mesh.hpp
         src/Mesh.cpp
         src/Renderer.cpp
         include/Renderer.hpp
         include/Utils.hpp)
+
+target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/libViewer.a
+        "-framework Cocoa"
+        "-framework Metal"
+        "-framework MetalKit"
+        "-framework MetalPerformanceShaders"
+        "-framework QuartzCore")

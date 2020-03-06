@@ -16,8 +16,10 @@ namespace gravity {
         dispatch_semaphore_t _sema;
         mtl_cpp::Buffer _triangles;
         mtl_cpp::Buffer _vertices;
-        mtl_cpp::Buffer _localToWorlds[BUFFER_SIZE];
+        mtl_cpp::Buffer localToWorlds_[BUFFER_SIZE];
         mtl_cpp::Buffer _camera[BUFFER_SIZE];
+        mtl_cpp::Buffer v0;
+        mtl_cpp::Buffer t0;
         uint8_t _buffer_idx = 0;
         uint32_t _instanceCount = 0;
 
@@ -27,7 +29,6 @@ namespace gravity {
         mtl_cpp::Texture _sampling;
         mtl_cpp::RenderPipelineState _shader;
         std::string _shaderCode;
-
     public:
         Renderer();
 
@@ -36,6 +37,10 @@ namespace gravity {
         void onDraw(void* view) override;
 
         void onSizeChange(void* view, unsigned long const size[2]) override;
+
+        void updateCamera(Camera const& cam);
+
+        friend class World;
 
     };
 }

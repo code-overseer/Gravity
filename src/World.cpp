@@ -1,5 +1,5 @@
 #include "../include/World.hpp"
-#include "../include/components/components.hpp"
+#include "../include/components.hpp"
 #include <vector>
 #include <unordered_map>
 #include <exception>
@@ -10,8 +10,36 @@ void gravity::World::update() {
     // move
     // update gravity grid
     // update collider grid
-    // update local to worlds
-    // draw
+
+}
+
+void gravity::World::preDraw(Renderer & renderer) const {
+    // update camera
+    // update local to worlds components
+    // cull w/ Circle collider
+    // update ltw buffer
+    renderer.updateCamera(_mainCamera);
+    auto& ltw = renderer.localToWorlds_[renderer._buffer_idx];
+    auto v = _registry.view<const components::LocalToWorld>();
+    if (ltw.isEmpty()) {
+        ltw = Renderer::mallocBuffer(renderer._device, v.raw(), v.size()*sizeof(components::LocalToWorld), mtl_cpp::Managed);
+    } else {
+        ltw.copy(v.raw(), v.size()*sizeof(components::LocalToWorld));
+    }
+    renderer._instanceCount = v.size();
+    static bool s = true;
+    if (s) {
+        auto m = mathsimd::matmul(v.raw()->val, mathsimd::float4(renderer._vertices.raw<mathsimd::float2>()[1],0,1));
+        std::cout<<"world: "<<m<<std::endl;
+        auto vi = renderer._camera[renderer._buffer_idx].raw<mathsimd::float4x4>()[0];
+        m = mathsimd::matmul(vi, m);
+        std::cout<<"cam: "<<m<<std::endl;
+        auto pr = renderer._camera[renderer._buffer_idx].raw<mathsimd::float4x4>()[1];
+        m = mathsimd::matmul(pr, m);
+        std::cout<<"screen: "<<m<<std::endl;
+        std::cout<<v.size()<<std::endl;
+        s = false;
+    }
 }
 
 int gravity::World::_gravityCellIndex(mathsimd::float2 p) {
@@ -73,7 +101,5 @@ void gravity::World::initializeParticles() {
         _registry.assign<LocalToWorld>(e, LocalToWorld::fromPositionAndRadius(pos, r));
         ++i;
     }
-
-
 
 }

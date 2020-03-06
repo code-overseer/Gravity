@@ -47,7 +47,8 @@ namespace gravity::components {
         static LocalToWorld fromPositionAndRadius(mathsimd::float2 const &pos, float radius) {
             using namespace mathsimd;
             auto tmp = LocalToWorld(pos);
-            tmp.val = matmul(tmp.val, radius*float4x4::identity());
+            mathsimd::float4x4 tmp1 = {radius*float4::right(),radius*float4::up(),radius*float4::forward(),float4::in()};
+            tmp.val = matmul(tmp.val, tmp1);
             return tmp;
         }
     };

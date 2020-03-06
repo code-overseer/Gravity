@@ -1,3 +1,0 @@
-
-
-#include "../include/Camera.hpp"

@@ -20,13 +20,14 @@ gravity::Mesh &gravity::Mesh::operator=(gravity::Mesh &&mesh) noexcept {
 gravity::Mesh gravity::Mesh::makeCircle() {
     static constexpr float R = 0.5f;
     static constexpr uint16_t SIDES = 120;
-    static constexpr float INV_2PI = 0.1591549431f;
+    static constexpr float _2PI = 6.2831853072f;
     Mesh out;
     out.vertices.reserve(SIDES + 1);
     int v = 1;
-    out.vertices.emplace_back(0,0,0);
+    out.vertices.emplace_back(0,0);
     while (v <= SIDES) {
-        float rad = static_cast<float>(v) / SIDES * INV_2PI;
+        float rad = static_cast<float>(v) / SIDES * _2PI;
+
         out.vertices.emplace_back(R * cos(rad), R * sin(rad));
         ++v;
     }
