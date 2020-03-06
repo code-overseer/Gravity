@@ -64,11 +64,13 @@ void gravity::World::initializeParticles() {
             default:
                 throw std::invalid_argument("Expected range 0 - 7");
         }
+        float r = _rand.rnd(1.f,15.f);
         _registry.assign<Position>(e, pos);
         _registry.assign<Velocity>(e, 0,0);
-        _registry.assign<CircleCollider>(e, _rand.rnd(1.f,15.f));
+        _registry.assign<CircleCollider>(e, r);
         _registry.assign<Mass>(e, _rand.rnd(1.f,100.f));
         _registry.assign<Restitution>(e, _rand.rnd(0.5f,1.f));
+        _registry.assign<LocalToWorld>(e, LocalToWorld::fromPositionAndRadius(pos, r));
         ++i;
     }
 

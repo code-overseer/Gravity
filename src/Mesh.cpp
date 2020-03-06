@@ -3,6 +3,20 @@
 #include <mathsimd.hpp>
 
 
+gravity::Mesh &gravity::Mesh::operator=(const gravity::Mesh &mesh) {
+    if (&mesh == this) return *this;
+    vertices = mesh.vertices;
+    triangles = mesh.triangles;
+    return *this;;
+}
+
+gravity::Mesh &gravity::Mesh::operator=(gravity::Mesh &&mesh) noexcept {
+    if (&mesh == this) return *this;
+    vertices = std::move(mesh.vertices);
+    triangles = std::move(mesh.triangles);
+    return *this;;
+}
+
 gravity::Mesh gravity::Mesh::makeCircle() {
     static constexpr float R = 0.5f;
     static constexpr uint16_t SIDES = 120;

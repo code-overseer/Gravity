@@ -32,14 +32,23 @@ namespace gravity::components {
         operator float() { return val; }
     };
     struct LocalToWorld {
-        mathsimd::float4x4 val;
+        mathsimd::float4x4 val = mathsimd::float4x4::identity();
         LocalToWorld(mathsimd::float4x4 const &translation, mathsimd::float4x4 const &rotation, mathsimd::float4x4 const &scale) {
             val = mathsimd::matmul(mathsimd::matmul(translation, rotation), scale);
+        }
+        explicit LocalToWorld(mathsimd::float4x4 const &ltw) {
+            val = ltw;
         }
         explicit LocalToWorld(mathsimd::float2 const &position) {
             using namespace mathsimd;
             auto tmp = float4(position.x(), position.y(), 0, 1);
             val = float4x4(float4::right(), float4::up(), float4::forward(), tmp);
+        }
+        static LocalToWorld fromPositionAndRadius(mathsimd::float2 const &pos, float radius) {
+            using namespace mathsimd;
+            auto tmp = LocalToWorld(pos);
+            tmp.val = matmul(tmp.val, radius*float4x4::identity());
+            return tmp;
         }
     };
 
