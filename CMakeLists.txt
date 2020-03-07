@@ -22,7 +22,7 @@ add_executable(${PROJECT_NAME} main.cpp
         src/Mesh.cpp
         src/Renderer.cpp
         include/Renderer.hpp
-        include/Utils.hpp)
+        include/Utils.hpp include/CollisionGrid.hpp src/CollisionGrid.cpp)
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/libViewer.a
         "-framework Cocoa"

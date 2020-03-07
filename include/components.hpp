@@ -18,7 +18,7 @@ namespace gravity::components {
     struct CircleCollider {
         float radius;
         explicit CircleCollider(float r) : radius(r) {}
-        AABB toAABB(mathsimd::float2 const&pos) { return AABB{pos - radius, pos + radius};}
+        [[nodiscard]] AABB toAABB(mathsimd::float2 const&pos) const { return AABB{pos - radius, pos + radius};}
         operator float() { return radius; }
     };
     struct Mass {

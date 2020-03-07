@@ -24,14 +24,7 @@ namespace gravity {
                 trees_.emplace_back(theta_sqr, AABB{min, min + step}, (entities / N) << 2u);
             }
         }
-        [[nodiscard]] int getIndex(mathsimd::float2 p) const  {
-            using namespace mathsimd;
-            p = p - WORLD.min;
-            p = p / (WORLD.max - WORLD.min);
-            p = p * float2{static_cast<float>(WIDTH),static_cast<float>(HEIGHT)};
-            p = float2(std::floor(p.x()),std::floor(p.y()));
-            return static_cast<int>(dot(p, {1, static_cast<float>(WIDTH)}));
-        }
+
         [[nodiscard]] BH_QuadTree const& tree(int idx) const { return trees_[idx]; }
         BH_QuadTree& tree(int idx) { return trees_[idx]; }
         void clear() {

@@ -1,7 +1,7 @@
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "cert-err58-cpp"
 
-
+#include "../include/Utils.hpp"
 #include "../include/BH_Tests.hpp"
 using namespace gravity;
 
@@ -36,13 +36,13 @@ gravity::BH_Tests::group(std::array<mathsimd::float2, VALUES> &pos, const gravit
     memset(count.data(),0, N_CELLS*sizeof(int));
 
     for (auto const&i : pos) {
-        int idx = grid.getIndex(i);
+        int idx = getIndex(i, WORLD, 4, 2);
         ++count[idx];
     }
     static std::array<mathsimd::float2,VALUES> COPY;
     std::exclusive_scan(count.begin(), count.end(), count.begin(), 0);
     for (auto const&i : pos) {
-        auto k = grid.getIndex(i);;
+        auto k = getIndex(i, WORLD, 4, 2);
         COPY[count[k]++] = i;
     }
     pos = COPY;

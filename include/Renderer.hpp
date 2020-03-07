@@ -18,8 +18,6 @@ namespace gravity {
         mtl_cpp::Buffer _vertices;
         mtl_cpp::Buffer localToWorlds_[BUFFER_SIZE];
         mtl_cpp::Buffer _camera[BUFFER_SIZE];
-        mtl_cpp::Buffer v0;
-        mtl_cpp::Buffer t0;
         uint8_t _buffer_idx = 0;
         uint32_t _instanceCount = 0;
 

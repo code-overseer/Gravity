@@ -5,7 +5,7 @@
 namespace gravity {
     struct Camera {
     private:
-        float zoom_ = 2000.f;
+        float zoom_ = 1000.f;
         float rcp_aspect_ = 0.666666667f; // height/width
         mathsimd::float2 position_{0,0};
         // far = 8.1, near = 0.1

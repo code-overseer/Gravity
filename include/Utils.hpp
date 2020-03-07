@@ -2,6 +2,7 @@
 #define GRAVITY_UTILS_HPP
 #include <string>
 #include <fstream>
+#include "AABB.hpp"
 
 inline std::string readFile(char const* path) {
     std::ifstream file(path);
@@ -15,4 +16,12 @@ inline std::string readFile(char const* path) {
     return text;
 }
 
+inline int getIndex(mathsimd::float2 p, gravity::AABB const& world, float const& width, float const& height) {
+    using namespace mathsimd;
+    p = p - world.min;
+    p = p / (world.max - world.min);
+    p = p * float2{width,height};
+    p = float2(std::floor(p.x()),std::floor(p.y()));
+    return static_cast<int>(dot(p, {1, width}));
+}
 #endif //GRAVITY_UTILS_HPP

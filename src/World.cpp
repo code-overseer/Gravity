@@ -1,5 +1,6 @@
 #include "../include/World.hpp"
 #include "../include/components.hpp"
+#include "../include/Utils.hpp"
 #include <vector>
 #include <unordered_map>
 #include <exception>
@@ -15,10 +16,10 @@ void gravity::World::update() {
 
 void gravity::World::preDraw(Renderer & renderer) const {
     // update camera
+    renderer.updateCamera(_mainCamera);
     // update local to worlds components
     // cull w/ Circle collider
     // update ltw buffer
-    renderer.updateCamera(_mainCamera);
     auto& ltw = renderer.localToWorlds_[renderer._buffer_idx];
     auto v = _registry.view<const components::LocalToWorld>();
     if (ltw.isEmpty()) {
@@ -27,44 +28,21 @@ void gravity::World::preDraw(Renderer & renderer) const {
         ltw.copy(v.raw(), v.size()*sizeof(components::LocalToWorld));
     }
     renderer._instanceCount = v.size();
-    static bool s = true;
-    if (s) {
-        auto m = mathsimd::matmul(v.raw()->val, mathsimd::float4(renderer._vertices.raw<mathsimd::float2>()[1],0,1));
-        std::cout<<"world: "<<m<<std::endl;
-        auto vi = renderer._camera[renderer._buffer_idx].raw<mathsimd::float4x4>()[0];
-        m = mathsimd::matmul(vi, m);
-        std::cout<<"cam: "<<m<<std::endl;
-        auto pr = renderer._camera[renderer._buffer_idx].raw<mathsimd::float4x4>()[1];
-        m = mathsimd::matmul(pr, m);
-        std::cout<<"screen: "<<m<<std::endl;
-        std::cout<<v.size()<<std::endl;
-        s = false;
-    }
-}
-
-int gravity::World::_gravityCellIndex(mathsimd::float2 p) {
-    using namespace components;
-    using namespace mathsimd;
-    p = p - _bounds.min;
-    p = p / (_bounds.max - _bounds.min);
-    p = p * float2{static_cast<float>(4), static_cast<float>(2)};
-    p = float2(std::floor(p.x()), std::floor(p.y()));
-    return static_cast<int>(dot(p, {1, static_cast<float>(2)}));
 }
 
 void gravity::World::initializeParticles() {
     using namespace components;
     using namespace mathsimd;
-    std::vector<entt::entity> entities(10000);
+    std::vector<entt::entity> entities(2500);
     _registry.create(entities.begin(), entities.end());
 
     auto const start = _bounds.min + float2(200,200);
     int i = 0;
     for (auto &e : entities) {
-        int dx = i % 100;
-        int dy = i / 100;
-        auto pos = start + 16.f * float2(static_cast<float>(dx),static_cast<float>(dy));
-        switch (_gravityCellIndex(pos)) {
+        int dx = i % 50;
+        int dy = i / 50;
+        auto pos = start + 32.f * float2(static_cast<float>(dx),static_cast<float>(dy));
+        switch (getIndex(pos, _bounds, 4, 2)) {
             case Grid0:
                 _registry.assign<entt::tag<Grid0>>(e);
                 break;
@@ -92,7 +70,7 @@ void gravity::World::initializeParticles() {
             default:
                 throw std::invalid_argument("Expected range 0 - 7");
         }
-        float r = _rand.rnd(1.f,15.f);
+        float r = _rand.rnd(5.f,15.f);
         _registry.assign<Position>(e, pos);
         _registry.assign<Velocity>(e, 0,0);
         _registry.assign<CircleCollider>(e, r);
