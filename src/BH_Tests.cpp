@@ -30,8 +30,18 @@ std::array<float, BH_Tests::VALUES> &gravity::BH_Tests::generate_masses() {
     return test_cases;
 }
 
-std::array<int, BH_Tests::N_CELLS>
-gravity::BH_Tests::group(std::array<mathsimd::float2, VALUES> &pos, const gravity::BH_Tests::Grid &grid) {
+std::array<gravity::components::CircleCollider, BH_Tests::VALUES> &BH_Tests::generate_colliders() {
+    static bool created = false;
+    static std::array<components::CircleCollider,VALUES> test_cases;
+    if (created) return test_cases;
+    for (auto &val : test_cases) {
+        val = components::CircleCollider(rand.rnd(2.f, 5.f));
+    }
+    created = true;
+    return test_cases;
+}
+
+std::array<int, BH_Tests::N_CELLS> BH_Tests::group(std::array<mathsimd::float2, VALUES> &pos, const gravity::BH_Tests::Grid &grid) {
     std::array<int, N_CELLS> count{};
     memset(count.data(),0, N_CELLS*sizeof(int));
 
@@ -91,5 +101,23 @@ double BH_Tests::test_grid(BH_Tests::Grid &grid) {
 
     return total;
 }
+
+double BH_Tests::test_cgrid(CollisionGrid & grid, entt::registry& reg) {
+    double total;
+
+    using namespace std::chrono;
+    auto start = high_resolution_clock::now();
+
+    reg.view<mathsimd::float2, components::CircleCollider>().each([&grid](entt::entity const& e,
+                                                                          mathsimd::float2 const& p,
+                                                                          components::CircleCollider const& r){
+        grid.add(e,p,r);
+    });
+    grid.flushLooseCells();
+    auto elapsed = high_resolution_clock::now() - start;
+    total = static_cast<double>(duration_cast<microseconds>(elapsed).count());
+    return total;
+}
+
 
 #pragma clang diagnostic pop

@@ -4,6 +4,8 @@
 #define GRAVITY_BH_TESTS_HPP
 #include "BH_Grid.hpp"
 #include "BH_QuadTree.hpp"
+#include "CollisionGrid.hpp"
+#include "components.hpp"
 #include <mathsimd.hpp>
 #include <algorithm>
 #include <chrono>
@@ -25,11 +27,12 @@ namespace gravity {
         static AABB WORLD;//(-1000,-1000,1000,1000);
         static mathsimd::Random rand;//(SEED);
         static std::array<mathsimd::float2,VALUES>& generate_positions();
+        static std::array<gravity::components::CircleCollider, VALUES>&generate_colliders();
         static std::array<float,VALUES>& generate_masses();
         static std::array<int, N_CELLS> group(std::array<mathsimd::float2,VALUES>& pos, Grid const& grid);
         static double test_qtree(gravity::BH_QuadTree & tree);
         static double test_grid(Grid & grid);
-
+        static double test_cgrid(CollisionGrid & grid, entt::registry &reg);
     };
 
 }

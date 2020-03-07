@@ -8,6 +8,7 @@
 void gravity::World::update() {
     // update forces
     // check for collisions
+
     // move
     // update gravity grid
     // update collider grid
@@ -79,5 +80,7 @@ void gravity::World::initializeParticles() {
         _registry.assign<LocalToWorld>(e, LocalToWorld::fromPositionAndRadius(pos, r));
         ++i;
     }
+    auto size = _bounds.max - _bounds.min;
+    _collisionGrid = CollisionGrid(_bounds, static_cast<int>(size.x()), static_cast<int>(size.y()), entities.size());
 
 }

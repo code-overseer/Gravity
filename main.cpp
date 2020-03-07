@@ -29,9 +29,10 @@ static void tests() {
 
     }
 }
-static gravity::Renderer r = gravity::Renderer();
-int main() {
+
+static void runApp() {
     using namespace std::chrono;
+    static gravity::Renderer r = gravity::Renderer();
     gravity::World w;
     w.initializeParticles();
     launch_app();
@@ -45,7 +46,29 @@ int main() {
         w.preDraw(r);
         update_view(&u);
     }
+}
 
+static void test_collision() {
+    using namespace gravity;
+    auto pos = BH_Tests::generate_positions();
+    auto col = BH_Tests::generate_colliders();
+    std::vector<entt::entity> entities(pos.size());
+    entt::registry reg;
+    reg.create(entities.begin(), entities.end());
+    reg.assign<mathsimd::float2>(entities.begin(),entities.end(), pos.begin());
+    reg.assign<components::CircleCollider>(entities.begin(),entities.end(), col.begin());
+    CollisionGrid grid(BH_Tests::WORLD, 200,200, BH_Tests::VALUES);
 
+    double seq_time = 0.0;
+    for (int i = 0; i < BH_Tests::TESTS; ++i) {
+        seq_time += BH_Tests::test_cgrid(grid, reg);
+        grid.clear();
+    }
+    printf("Sequential Time: %f us\n", seq_time / BH_Tests::TESTS);
+}
+
+int main() {
+
+    test_collision();
     return 0;
 }
