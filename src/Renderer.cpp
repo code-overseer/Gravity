@@ -1,6 +1,7 @@
 #include "../include/Renderer.hpp"
 #include "../include/Utils.hpp"
 #include "../include/Mesh.hpp"
+#include <chrono>
 
 gravity::Renderer::Renderer() : mtl_cpp::Metal_API(), _device(getDevice()), _shaderCode(readFile(SHADER_SOURCE)) {
     _sema = dispatch_semaphore_create(BUFFER_SIZE);
@@ -16,9 +17,12 @@ void gravity::Renderer::onInitialize(void *view) {
 }
 
 void gravity::Renderer::onDraw(void *view) {
-    static auto handler = [this]() { dispatch_semaphore_signal(_sema); };
     if (!_instanceCount) return;
-    const double target = getTime() + 0.016666667;
+    using namespace std::chrono;
+    const double target = getTime() + 0.016667;
+    auto handler = [this]() {
+        dispatch_semaphore_signal(_sema);
+    };
 
     dispatch_semaphore_wait(_sema, DISPATCH_TIME_FOREVER);
     auto buffer = getCommandBuffer(_queue);

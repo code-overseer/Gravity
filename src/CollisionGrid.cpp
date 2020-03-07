@@ -14,6 +14,7 @@ CollisionGrid::CollisionGrid(AABB world, int width, int height, int particles) :
 }
 
 void CollisionGrid::add(entt::entity const &e, mathsimd::float2 const &pos, components::CircleCollider const&radius) {
+    if (!_world.contains(pos)) return;
     int const idx = getIndex(pos, _world, static_cast<float>(_width), static_cast<float>(_height));
     auto this_box = radius.toAABB(pos);
     int next_ent = _looseCells[idx].head;
@@ -49,13 +50,13 @@ void CollisionGrid::clear() {
     _looseCells.clear();
     _looseNodes.clear();
     _entities.clear();
-    _tightCells.resize(_width * _height);
-    _looseCells.resize(_width * _height);
+    _tightCells.resize(_width * _height, TightCell());
+    _looseCells.resize(_width * _height, LooseCell());
 }
 
 std::vector<entt::entity> CollisionGrid::query(AABB const &box) const {
     std::vector<entt::entity> output;
-    output.reserve(10);
+    if (!_world.contains(box.max) || !_world.contains(box.min)) return std::vector<entt::entity>();
     auto tr = getIndex(box.max,_world, static_cast<float>(_width), static_cast<float>(_height));
     auto bl = getIndex(box.min,_world, static_cast<float>(_width), static_cast<float>(_height));
     auto x0 = bl % _width, x1 = tr % _width;

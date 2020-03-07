@@ -39,6 +39,7 @@ namespace gravity {
         std::vector<LooseCell> _looseCells;
         std::vector<LooseNode> _looseNodes;
         std::vector<TightCell> _tightCells;
+        CollisionGrid() = default;
         CollisionGrid(AABB world, int width, int height, int particles);
         CollisionGrid(CollisionGrid&& grid) noexcept : _entities(std::move(grid._entities)), _looseCells(std::move(grid._looseCells)),
         _looseNodes(std::move(grid._looseNodes)), _tightCells(std::move(grid._tightCells)),

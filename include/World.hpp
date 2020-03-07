@@ -20,10 +20,9 @@ namespace gravity {
         Camera _mainCamera;
         CollisionGrid _collisionGrid;
     public:
-        void initializeParticles();
-        World() = default;
+        World();
         void update();
-        void preDraw(Renderer& renderer) const;
+        void preDraw(Renderer& renderer);
     };
 }
 

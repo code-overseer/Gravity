@@ -34,15 +34,13 @@ static void runApp() {
     using namespace std::chrono;
     static gravity::Renderer r = gravity::Renderer();
     gravity::World w;
-    w.initializeParticles();
     launch_app();
     bool u = true;
-    auto now = std::chrono::high_resolution_clock::now();
+    auto now = high_resolution_clock::now();
     while (u) {
         w.update();
-        auto elapsed = high_resolution_clock::now() - now;
-        if (static_cast<double>(duration_cast<microseconds>(elapsed).count())*1000 < 16.6) continue;
-        now = std::chrono::high_resolution_clock::now();
+        if (duration<double>(high_resolution_clock::now() - now).count() < 0.0166) continue;
+        now = high_resolution_clock::now();
         w.preDraw(r);
         update_view(&u);
     }
@@ -69,6 +67,6 @@ static void test_collision() {
 
 int main() {
 
-    test_collision();
+    runApp();
     return 0;
 }

@@ -22,6 +22,9 @@ namespace gravity::components {
         [[nodiscard]] AABB toAABB(mathsimd::float2 const&pos) const { return AABB{pos - radius, pos + radius};}
         operator float() { return radius; }
     };
+    struct Checked {
+        bool val = false;
+    };
     struct Mass {
         float val;
         explicit Mass(float m) : val(m) {}
@@ -48,6 +51,7 @@ namespace gravity::components {
         static LocalToWorld fromPositionAndRadius(mathsimd::float2 const &pos, float radius) {
             using namespace mathsimd;
             auto tmp = LocalToWorld(pos);
+            radius *= 2;
             mathsimd::float4x4 tmp1 = {radius*float4::right(),radius*float4::up(),radius*float4::forward(),float4::in()};
             tmp.val = matmul(tmp.val, tmp1);
             return tmp;
