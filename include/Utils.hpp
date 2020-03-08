@@ -16,8 +16,10 @@ inline std::string readFile(char const* path) {
     return text;
 }
 
-inline int getIndex(mathsimd::float2 const &p, gravity::AABB const& world, float const& width, float const& height) {
+inline int getIndex(mathsimd::float2 p, gravity::AABB const& world, float const& width, float const& height) {
     using namespace mathsimd;
+    p = mathsimd::float2::minimum(p, world.max - 0.00001);
+    p = mathsimd::float2::maximum(p, world.min + 0.00001);
     __m128 wm = world.min;
     __m128 wma = world.max;
     __m128 pa = p;
