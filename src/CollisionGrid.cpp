@@ -54,9 +54,10 @@ void CollisionGrid::clear() {
     _looseCells.resize(_width * _height, LooseCell());
 }
 
-std::vector<entt::entity> CollisionGrid::query(AABB const &box) const {
-    std::vector<entt::entity> output;
-    if (!_world.contains(box.max) || !_world.contains(box.min)) return std::vector<entt::entity>();
+std::vector<entt::entity> const& CollisionGrid::query(AABB const &box) {
+    _queryResult.clear();
+
+    if (!_world.contains(box.max) || !_world.contains(box.min)) return _queryResult;
     auto tr = getIndex(box.max,_world, static_cast<float>(_width), static_cast<float>(_height));
     auto bl = getIndex(box.min,_world, static_cast<float>(_width), static_cast<float>(_height));
     auto x0 = bl % _width, x1 = tr % _width;
@@ -69,11 +70,10 @@ std::vector<entt::entity> CollisionGrid::query(AABB const &box) const {
             for (auto l_node = _tightCells[t_cell].head; l_node != -1; l_node = _looseNodes[l_node].next) {
                  auto l_cell = _looseNodes[l_node].cell;
                  for (auto e = _looseCells[l_cell].head; e != -1; e = _entities[e].next) {
-                     output.emplace_back(_entities[e].val);
+                     _queryResult.emplace_back(_entities[e].val);
                  }
             }
         }
     }
-
-    return output;
+    return _queryResult;
 }

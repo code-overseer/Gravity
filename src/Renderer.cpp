@@ -20,7 +20,7 @@ void gravity::Renderer::onDraw(void *view) {
     if (!_instanceCount) return;
     using namespace std::chrono;
     const double target = getTime() + 0.016667;
-    auto handler = [this]() {
+    static auto handler = [this]() {
         dispatch_semaphore_signal(_sema);
     };
 

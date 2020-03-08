@@ -11,10 +11,11 @@ void gravity::World::update() {
     static auto timer = high_resolution_clock::now();
     auto deltaTime = duration<double>(high_resolution_clock::now() - timer).count();
     timer = high_resolution_clock::now();
+
     // update forces
     auto pv_view = _registry.view<components::Position,components::Velocity>();
     pv_view.each([=](components::Position &p, components::Velocity const& v) {
-        p.val = p.val + v.val * deltaTime * 4;
+        p.val = p.val + v.val * deltaTime;
     });
 
     // check for collisions
@@ -23,14 +24,19 @@ void gravity::World::update() {
         _collisionGrid.add(e,p.val,r);
     });
     _collisionGrid.flushLooseCells();
+
     std::vector<std::pair<entt::entity, entt::entity>> collisions;
     auto view = _registry.view<components::Position, components::CircleCollider, components::Checked, components::Velocity>();
+    int cnt = 0;
+    std::cout<<"size "<<view.size()<<'\n';
     for (auto entity : view) {
         auto& stat = view.get<components::Checked>(entity);
         stat.val = true;
         auto this_pos = view.get<components::Position>(entity);
         auto this_col = view.get<components::CircleCollider>(entity);
-        auto result = _collisionGrid.query(this_col.toAABB(this_pos.val));
+        std::cout<<cnt++<<'\n';
+        auto const &result = _collisionGrid.query(this_col.toAABB(this_pos.val));
+//        std::cout<<"after"<<'\n';
         for (auto const& other : result) {
             if (other == entity || view.get<components::Checked>(other).val) continue;
             auto& pos = view.get<components::Position>(other);
@@ -38,20 +44,19 @@ void gravity::World::update() {
             auto R_sqr = std::pow((this_col.radius + col.radius)*1.05f,2);
             auto nba = this_pos.val - pos.val;
             auto sqrMag = nba.sqrMagnitude();
-            nba = nba.normalized();
-            auto va = view.get<components::Velocity>(entity);
-            auto vb = view.get<components::Velocity>(other);
-            auto denom = dot(va.val - vb.val, nba);
+            auto va = view.get<components::Velocity>(entity).val;
+            auto vb = view.get<components::Velocity>(other).val;
+            auto denom = dot(va - vb, nba);
             if (sqrMag < R_sqr && denom < 0) {
-                auto dt = (R_sqr - sqrMag) * 0.5f / (-denom * std::sqrt(sqrMag));
-                dt = (std::isnan(dt) || dt > deltaTime) ? 0.5f * deltaTime : deltaTime - dt;
-                this_pos.val = this_pos.val - dt * va.val;
-                pos.val = pos.val - dt * vb.val;
                 collisions.emplace_back(entity, other);
+                break;
             }
         }
     }
+
     _collisionGrid.clear();
+
+
     auto col_view = _registry.view<components::Velocity, components::Mass, components::Restitution, components::Position>();
     for (auto const& collision : collisions) {
         auto cr = col_view.get<components::Restitution>(collision.first).val + col_view.get<components::Restitution>(collision.second).val;
@@ -67,20 +72,24 @@ void gravity::World::update() {
         auto ub = dot(dir, vel_b.val) * dir;
 
         auto inv_sum = 1.0 / (ma + mb);
-        auto va = inv_sum * (mb *(ub - ua) + ma * ua + mb * ub);
-        auto vb = inv_sum * (ma * (ua - ub) + ma * ua + mb * ub);
+        auto va = inv_sum * (cr * mb *(ub - ua) + ma * ua + mb * ub);
+        auto vb = inv_sum * (cr * ma * (ua - ub) + ma * ua + mb * ub);
         vel_a.val = vel_a.val - ua + va;
         vel_b.val = vel_b.val - ub + vb;
     }
 
-    pv_view.each([](components::Position const &p, components::Velocity& v){
-        if (std::fabs(p.val.x()) > 1000) {
-            v.val = v.val - 2*mathsimd::float2(v.val.x(),0);
+    auto pvc_view = _registry.view<components::Position,components::Velocity, components::CircleCollider>();
+    pvc_view.each([](components::Position const &p, components::Velocity& v, components::CircleCollider const& c){
+        if (std::fabs(p.val.x()) + c.radius > 1000) {
+            auto tmp = mathsimd::float2(v.val.x(),0);
+            if (dot(v.val, tmp) > 0) v.val = v.val - 2*tmp;
         }
-        if (std::fabs(p.val.y()) > 1000) {
-            v.val = v.val - 2*mathsimd::float2(0,v.val.y());
+        if (std::fabs(p.val.y()) + c.radius > 1000) {
+            auto tmp = mathsimd::float2(0,v.val.y());
+            if (dot(v.val, tmp) > 0) v.val = v.val - 2*tmp;
         }
     });
+
     _registry.view<components::Checked>().each([](components::Checked &c) { c.val = false; });
 
 
@@ -112,7 +121,7 @@ void gravity::World::preDraw(Renderer & renderer) {
 gravity::World::World() {
     using namespace components;
     using namespace mathsimd;
-    int n = 5;
+    int n = 15;
     std::vector<entt::entity> entities(n * n);
     _registry.create(entities.begin(), entities.end());
 
@@ -152,7 +161,7 @@ gravity::World::World() {
         }
         float r = _rand.rnd(25.f,26.f);
         _registry.assign<Position>(e, pos);
-        _registry.assign<Velocity>(e, _rand.rnd(0.f,24.f),_rand.rnd(0.f,24.f));
+        _registry.assign<Velocity>(e, _rand.rnd(-124.f,124.f),_rand.rnd(-124.f,124.f));
         _registry.assign<CircleCollider>(e, r);
         _registry.assign<Mass>(e, 20.f);//_rand.rnd(1.f,100.f)
         _registry.assign<Restitution>(e, 1.0);//_rand.rnd(0.5f,1.f)
@@ -161,6 +170,6 @@ gravity::World::World() {
         ++i;
     }
     auto size = _bounds.max - _bounds.min;
-    _collisionGrid = CollisionGrid(_bounds, 200, 200, entities.size());
+    _collisionGrid = CollisionGrid(_bounds, 40, 40, entities.size());
 
 }

@@ -19,7 +19,7 @@ gravity::Mesh &gravity::Mesh::operator=(gravity::Mesh &&mesh) noexcept {
 
 gravity::Mesh gravity::Mesh::makeCircle() {
     static constexpr float R = 0.5f;
-    static constexpr uint16_t SIDES = 120;
+    static constexpr uint16_t SIDES = 90;
     static constexpr float _2PI = 6.2831853072f;
     Mesh out;
     out.vertices.reserve(SIDES + 1);
