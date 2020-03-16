@@ -18,13 +18,13 @@ inline std::string readFile(char const* path) {
 
 inline int getIndex(mathsimd::float2 p, gravity::AABB const& world, float const& width, float const& height) {
     using namespace mathsimd;
-    p = mathsimd::float2::minimum(p, world.max - 0.00001);
-    p = mathsimd::float2::maximum(p, world.min + 0.00001);
+    p = mathsimd::float2::minimum(p, world.max - 0.0001);
+    p = mathsimd::float2::maximum(p, world.min + 0.0001);
     __m128 wm = world.min;
     __m128 wma = world.max;
     __m128 pa = p;
     __m128 wh{width, height};
-    pa =  _mm_mul_ps(_mm_floor_ps((pa - wm) / (wma - wm) * wh), __m128{1,width});
+    pa =  _mm_mul_ps(_mm_floor_ps((pa - wm) / (wma - wm)) * wh, __m128{1,width});
     return static_cast<int>(pa[0] + pa[1]);
 }
 #endif //GRAVITY_UTILS_HPP

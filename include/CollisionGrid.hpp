@@ -15,8 +15,10 @@ namespace gravity {
             template<typename T>
             using __lim = std::numeric_limits<T>;
         public:
-            int head = -1;
             AABB box{__lim<float>::max(), __lim<float>::max(), -__lim<float>::max(), -__lim<float>::max()};
+            int head = -1;
+            int count = 0;
+            LooseCell() = default;
         };
         struct LooseNode {
             int cell = -1;
@@ -25,6 +27,7 @@ namespace gravity {
         };
         struct TightCell {
             int head = -1;
+            int count = 0;
             TightCell() = default;
         };
         struct ElementNode {
@@ -32,8 +35,8 @@ namespace gravity {
             int next = -1;
             explicit ElementNode(entt::entity const& entity, int next = -1) : val(entity), next(next) {}
         };
-        int _width;
-        int _height;
+        int _width = 0;
+        int _height = 0;
         AABB _world;
         std::vector<ElementNode> _entities;
         std::vector<LooseCell> _looseCells;
@@ -54,7 +57,6 @@ namespace gravity {
             _world = std::move(grid._world);
             return *this;
         }
-
         void add(entt::entity const &e, mathsimd::float2 const &pos, components::CircleCollider const&radius);
         [[nodiscard]] std::vector<entt::entity> const& query(AABB const& box);
         void flushLooseCells();

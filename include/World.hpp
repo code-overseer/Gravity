@@ -16,7 +16,7 @@ namespace gravity {
         entt::registry _registry;
         tf::Executor _jobManager;
         mathsimd::Random _rand{1234};
-        const AABB _bounds{-1000,-1000,1000,1000};
+        const AABB _bounds{-2000,-2000,2000,2000};
         Camera _mainCamera;
         CollisionGrid _collisionGrid;
     public:
