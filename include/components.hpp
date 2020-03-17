@@ -1,6 +1,7 @@
 #ifndef GRAVITY_COMPONENTS_HPP
 #define GRAVITY_COMPONENTS_HPP
 #include <mathsimd.hpp>
+#include "AABB.hpp"
 namespace gravity::components {
     enum Tag { Grid0, Grid1, Grid2, Grid3, Grid4, Grid5, Grid6, Grid7 };
     struct Position {
