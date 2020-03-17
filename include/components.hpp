@@ -15,6 +15,13 @@ namespace gravity::components {
         Velocity(float const &x, float const &y) : val(x,y) {};
         operator mathsimd::float2() { return val; }
     };
+    struct Acceleration {
+        mathsimd::float2 val{0,0};
+        Acceleration(mathsimd::float2 const &x) : val(x) {};
+        Acceleration(float const &x, float const &y) : val(x,y) {};
+        operator mathsimd::float2() { return val; }
+    };
+
     struct CircleCollider {
         float radius = 0;
         CircleCollider() = default;

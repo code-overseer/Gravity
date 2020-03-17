@@ -52,7 +52,6 @@ void gravity::World::update() {
 
     _collisionGrid.clear();
 
-
     auto col_view = _registry.view<components::Velocity, components::Mass, components::Restitution, components::Position>();
     for (auto const& collision : collisions) {
         auto cr = col_view.get<components::Restitution>(collision.first).val + col_view.get<components::Restitution>(collision.second).val;
@@ -80,9 +79,9 @@ void gravity::World::update() {
         auto tr = p.val + c.radius;
         auto bl = p.val - c.radius;
         bool r = tr.x() > b.max.x(), l = bl.x() < b.min.x(), t = tr.y() > b.max.y(), btm = bl.y() < b.min.y();
-        auto tmp = mathsimd::float2(((r && v.val.x() > 0) || (l && v.val.x() < 0)) * v.val.x(),
-                                    ((t && v.val.y() > 0) || (btm && v.val.y() < 0)) * v.val.y());
-        v.val = v.val - 2*tmp;
+        auto tmp = mathsimd::float2(((r && v.val.x() > 0) || (l && v.val.x() < 0)),
+                ((t && v.val.y() > 0) || (btm && v.val.y() < 0)));
+        v.val = v.val - 2 * tmp * v.val;
     });
 
     _registry.view<components::Checked>().each([](components::Checked &c) { c.val = false; });
@@ -116,7 +115,7 @@ void gravity::World::preDraw(Renderer & renderer) {
 gravity::World::World() {
     using namespace components;
     using namespace mathsimd;
-    int n = 40;
+    int n = 4;
     std::vector<entt::entity> entities(n * n);
     _registry.create(entities.begin(), entities.end());
 
@@ -125,7 +124,7 @@ gravity::World::World() {
     for (auto &e : entities) {
         int dx = i % n;
         int dy = i / n;
-        auto pos = start + 3600.f/n * float2(static_cast<float>(dx),static_cast<float>(dy));
+        auto pos = start + 3600.f/static_cast<float>(n) * float2(static_cast<float>(dx),static_cast<float>(dy));
         switch (getIndex(pos, _bounds, 4, 2)) {
             case Grid0:
                 _registry.assign<entt::tag<Grid0>>(e);
@@ -157,6 +156,7 @@ gravity::World::World() {
         float r = _rand.rnd(10.f,20.f);
         _registry.assign<Position>(e, pos);
         _registry.assign<Velocity>(e, _rand.rnd(-124.f,124.f),_rand.rnd(-124.f,124.f));
+        _registry.assign<Acceleration>(e, mathsimd::float2::zero());
         _registry.assign<CircleCollider>(e, r);
         _registry.assign<Mass>(e, _rand.rnd(10.f,80.f));
         _registry.assign<Restitution>(e, _rand.rnd(0.75f,1.f));
@@ -164,7 +164,7 @@ gravity::World::World() {
         _registry.assign<LocalToWorld>(e, LocalToWorld::fromPositionAndRadius(pos, r));
         ++i;
     }
-    auto size = _bounds.max - _bounds.min;
+
     _collisionGrid = CollisionGrid(_bounds, 80, 80, entities.size());
 
 }
