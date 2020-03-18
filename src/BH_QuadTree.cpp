@@ -33,3 +33,28 @@ void gravity::BH_QuadTree::clear() {
     nodes.clear();
     nodes.emplace_back(b);
 }
+
+mathsimd::float2 gravity::BH_QuadTree::traverse(mathsimd::float2 pos) {
+    using namespace mathsimd;
+    float2 acc = float2::zero();
+    _traversal.clear();
+    _traversal.emplace_back(0);
+    while (!_traversal.empty()) {
+        auto i = _traversal.back();
+        _traversal.pop_back();
+        if (nodes[i].isEmpty()) continue;
+
+        auto dir = nodes[i].centre - pos;
+        float inv_d_sqr = 1.f / dir.sqrMagnitude();
+        float theta_sqr = (nodes[i].box.max - nodes[i].box.min).sqrMagnitude() * inv_d_sqr;
+
+        if (nodes[i].isExternal() || theta_sqr < SqrTheta) {
+             acc = acc + (nodes[i].mass * inv_d_sqr) * dir.normalized();
+        } else {
+            for (int j = 3; j >= 0; --j) {
+                _traversal.emplace_back(nodes[i].first_child + j);
+            }
+        }
+    }
+    return acc;
+}

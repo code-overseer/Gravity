@@ -53,34 +53,6 @@ gravity::World::World() {
         int dx = i % n;
         int dy = i / n;
         auto pos = start + 3600.f/static_cast<float>(n) * float2(static_cast<float>(dx),static_cast<float>(dy));
-        switch (getIndex(pos, _bounds, 4, 2)) {
-            case Grid0:
-                _registry.assign<entt::tag<Grid0>>(e);
-                break;
-            case Grid1:
-                _registry.assign<entt::tag<Grid1>>(e);
-                break;
-            case Grid2:
-                _registry.assign<entt::tag<Grid2>>(e);
-                break;
-            case Grid3:
-                _registry.assign<entt::tag<Grid3>>(e);
-                break;
-            case Grid4:
-                _registry.assign<entt::tag<Grid4>>(e);
-                break;
-            case Grid5:
-                _registry.assign<entt::tag<Grid5>>(e);
-                break;
-            case Grid6:
-                _registry.assign<entt::tag<Grid6>>(e);
-                break;
-            case Grid7:
-                _registry.assign<entt::tag<Grid7>>(e);
-                break;
-            default:
-                throw std::invalid_argument("Expected range 0 - 7");
-        }
         float r = _rand.rnd(10.f,20.f);
         _registry.assign<Position>(e, pos);
         _registry.assign<Velocity>(e, _rand.rnd(-124.f,124.f),_rand.rnd(-124.f,124.f));
@@ -93,7 +65,7 @@ gravity::World::World() {
         ++i;
     }
 
-    _movement = new MovementSystem(&_registry);
+    _movement = new MovementSystem(&_registry, _bounds);
     _collision = new CollisionSystem(&_registry, _bounds, 80, 80, entities.size());
     _bounding = new BoundingSystem(&_registry, _bounds);
 

@@ -31,8 +31,8 @@ namespace gravity {
             BH_Node(BH_Node const &other) = default;
             BH_Node(BH_Node &&other) = default;
             [[nodiscard]] inline bool isEmpty() const { return !(0u ^ mass.bits); }
+            [[nodiscard]] inline bool isExternal() const { return first_child < 0; }
         };
-
         std::vector<BH_Node> nodes;
         float const SqrTheta;
         BH_QuadTree(BH_QuadTree const& other) = delete;
@@ -46,7 +46,9 @@ namespace gravity {
 
         void clear();
 
-
+        mathsimd::float2 traverse(mathsimd::float2 pos);
+    private:
+        std::vector<int> _traversal;
     };
 }
 

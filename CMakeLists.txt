@@ -22,7 +22,7 @@ add_executable(${PROJECT_NAME} main.cpp
         src/Mesh.cpp
         src/Renderer.cpp
         include/Renderer.hpp
-        include/Utils.hpp include/CollisionGrid.hpp src/CollisionGrid.cpp src/MovementSystem.cpp include/MovementSystem.hpp src/CollisionSystem.cpp include/CollisionSystem.hpp include/System.hpp src/BoundingSystem.cpp include/BoundingSystem.hpp)
+        include/Utils.hpp include/CollisionGrid.hpp src/CollisionGrid.cpp src/MovementSystem.cpp include/MovementSystem.hpp src/CollisionSystem.cpp include/CollisionSystem.hpp include/System.hpp src/BoundingSystem.cpp include/BoundingSystem.hpp include/For_.hpp src/GravitySystem.cpp include/GravitySystem.hpp)
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/libViewer.a
         "-framework Cocoa"
