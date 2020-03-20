@@ -1,9 +1,9 @@
-#include "../include/BoundingSystem.hpp"
+#include "../include/WallSystem.hpp"
 #include "../include/components.hpp"
 #include "../include/AABB.hpp"
 #include "../include/World.hpp"
 
-void gravity::systems::BoundingSystem::update(float delta) {
+void gravity::systems::WallSystem::update(float delta) {
     using namespace gravity::components;
     auto b = world().bounds();
     world().registry().view<Position,Velocity, CircleCollider>().each([b](Position const &p, Velocity& v, CircleCollider const& c) {

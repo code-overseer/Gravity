@@ -22,7 +22,6 @@ void gsys::GravitySystem::update(float delta) {
     tf::Taskflow tf;
     auto view = world().registry().view<Acceleration, Position, Velocity, Mass>();
 
-    int j = 0;
     for (auto entity : view) {
         auto pos = view.get<Position>(entity);
         auto new_acc = mathsimd::float2::zero();
@@ -42,7 +41,6 @@ void gravity::systems::GravitySystem::_insertToTrees() {
     using namespace components;
     tf::Taskflow tf;
 
-
     for_<decltype(_grid)::N>([&](auto i) {
         using Tp = entt::tag<decltype(_grid)::CellTag(decltype(i)::value)>;
         auto group = world().registry().group<Tp>(entt::get<Position, Mass>);
@@ -51,7 +49,7 @@ void gravity::systems::GravitySystem::_insertToTrees() {
         _insertion[decltype(i)::value].entity = group.template data<Tp>();
     });
 
-    auto [S,T] = tf.parallel_for(_insertion.begin(), _insertion.end(), [view = world().registry().view<Position,Mass>()](insertion_arg_t& args) {
+    tf.parallel_for(_insertion.begin(), _insertion.end(), [view = world().registry().view<Position,Mass>()](insertion_arg_t& args) {
         for (int i = 0; i < args.size; ++i) args.tree->insert(view.get<Position>(args.entity[i]), view.get<Mass>(args.entity[i])); });
 
     world().executor().run(tf).wait();

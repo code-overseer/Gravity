@@ -25,7 +25,7 @@ namespace gravity {
         entt::registry _registry;
         tf::Executor _executor;
         mathsimd::Random _rand{1234};
-        const AABB _bounds{-2000,-2000,2000,2000};
+        const AABB _bounds;
         Camera _mainCamera;
         std::vector<std::unique_ptr<gravity::systems::System>> _systems;
     public:
