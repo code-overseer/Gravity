@@ -30,7 +30,7 @@ void CollisionGrid::flushLooseCells() {
         auto const & cell = _looseCells[c];
         if (cell.head == -1) continue;
         auto tr = getIndex(cell.box.max, _world, static_cast<float>(_width), static_cast<float>(_height));
-        auto bl = getIndex(cell.box.min, _world, static_cast<float>(_width), static_cast<float>(_height));
+        volatile auto bl = getIndex(cell.box.min, _world, static_cast<float>(_width), static_cast<float>(_height));
 
         auto x0 = bl % _width, x1 = tr % _width;
         auto y0 = bl / _width, y1 = tr / _width;

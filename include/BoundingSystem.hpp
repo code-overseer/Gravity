@@ -1,17 +1,15 @@
-
-
 #ifndef GRAVITY_BOUNDINGSYSTEM_HPP
 #define GRAVITY_BOUNDINGSYSTEM_HPP
-#include "System.hpp"
-#include "AABB.hpp"
+
 #include <entt/entt.hpp>
+#include "System.hpp"
+
 namespace gravity::systems {
 
     class BoundingSystem : public System {
-    private:
-        AABB _world;
+        friend class gravity::World;
+        BoundingSystem(gravity::World& w) : System(w) {};
     public:
-        BoundingSystem(entt::registry *reg, AABB const&world) : System(reg), _world(world) {};
         void update(float delta) override;
     };
 }

@@ -1,6 +1,10 @@
-
-
+#include "../include/World.hpp"
+#include "../include/components.hpp"
 #include "../include/CollisionSystem.hpp"
+
+gravity::systems::CollisionSystem::CollisionSystem(gravity::World &w, int grid_width, int grid_height,
+                                                   int particles)  : System(w),
+                                                                     _grid(w.bounds(), grid_width, grid_height, particles) {}
 
 void gravity::systems::CollisionSystem::update(float delta) {
     _prepareGrid();
@@ -10,7 +14,7 @@ void gravity::systems::CollisionSystem::update(float delta) {
 
 void gravity::systems::CollisionSystem::_prepareGrid() {
     using namespace gravity::components;
-    auto view = _registry->view<Position, CircleCollider>();
+    auto view = world().registry().view<Position, CircleCollider>();
     view.each([this](entt::entity const& e, Position const& p, CircleCollider const& r){
         _grid.add(e, p.val, r);
     });
@@ -20,8 +24,8 @@ void gravity::systems::CollisionSystem::_prepareGrid() {
 void gravity::systems::CollisionSystem::_findCollisions() {
     using namespace gravity::components;
     _collisions.clear();
-    auto view = _registry->view<Position, CircleCollider, Checked, Velocity>();
-    
+    auto view = world().registry().view<Position, CircleCollider, Checked, Velocity>();
+
     for (auto entity : view) {
         auto& stat = view.get<Checked>(entity);
         stat.val = true;
@@ -33,7 +37,7 @@ void gravity::systems::CollisionSystem::_findCollisions() {
             if (other == entity || view.get<Checked>(other).val) continue;
             auto pos = view.get<Position>(other);
             auto col = view.get<CircleCollider>(other);
-            auto R_sqr = (this_col.radius + col.radius)*1.05f;
+            auto R_sqr = (this_col.radius + col.radius)*1.005f;
             R_sqr *= R_sqr;
             auto nba = this_pos.val - pos.val;
             auto sqrMag = nba.sqrMagnitude();
@@ -41,17 +45,16 @@ void gravity::systems::CollisionSystem::_findCollisions() {
             auto vb = view.get<Velocity>(other).val;
             if (sqrMag < R_sqr && dot(va - vb, nba) < 0) {
                 _collisions.emplace_back(entity, other);
-                break;
             }
         }
     }
     _grid.clear();
-    _registry->view<Checked>().each([](Checked &c) { c.val = false; });
+    world().registry().view<Checked>().each([](Checked &c) { c.val = false; });
 }
 
 void gravity::systems::CollisionSystem::_collide() {
     using namespace gravity::components;
-    auto view = _registry->view<Velocity, Mass, Restitution, Position>();
+    auto view = world().registry().view<Velocity, Mass, Restitution, Position>();
     for (auto const& collision : _collisions) {
         auto cr = 0.5f * (view.get<Restitution>(collision.first).val + view.get<Restitution>(collision.second).val);
         auto dir = (view.get<Position>(collision.first).val - view.get<Position>(collision.second).val).normalized();

@@ -4,23 +4,22 @@
 #define GRAVITY_MOVEMENTSYSTEM_HPP
 
 #include <entt/entt.hpp>
-#include "System.hpp"
-#include "AABB.hpp"
-#include "BH_Grid.hpp"
-#include "For_.hpp"
 #include <unordered_map>
 #include <functional>
+#include "System.hpp"
+#include "BH_Grid.hpp"
+#include "World.hpp"
 
 namespace gravity::systems {
 
     class MovementSystem : public System {
     private:
-        AABB _world;
         entt::dispatcher _eventDispatcher;
         std::unordered_map<int, std::function<void(entt::entity)>> _moveTo;
         std::unordered_map<int, std::function<void(entt::entity)>> _moveFrom;
+        friend class gravity::World;
+        MovementSystem(gravity::World& w);
     public:
-        MovementSystem(entt::registry *reg, AABB  world);
         void update(float delta) override;
         template <int CELL>
         struct MoveToCellEvent {
@@ -34,11 +33,11 @@ namespace gravity::systems {
         };
         template <int CELL>
         void MoveToCell(MoveToCellEvent<CELL> const & event) {
-            _registry->assign<entt::tag<BH_Grid<4,4>::CellTag(CELL)>>(event.entity);
+            world().registry().assign<entt::tag<BH_Grid<4,4>::CellTag(CELL)>>(event.entity);
         }
         template <int CELL>
         void MoveFromCell(MoveFromCellEvent<CELL> const& event) {
-            _registry->remove_if_exists<entt::tag<BH_Grid<4,4>::CellTag(CELL)>>(event.entity);
+            world().registry().remove_if_exists<entt::tag<BH_Grid<4,4>::CellTag(CELL)>>(event.entity);
         }
 
     };

@@ -26,6 +26,7 @@ void gravity::BH_QuadTree::insert(const mathsimd::float2& pos, float mass)  {
     nodes[idx].mass.val += mass;
     auto r = mass / nodes[idx].mass;
     nodes[idx].centre = nodes[idx].centre * (1 - r) + pos * r;
+
 }
 
 void gravity::BH_QuadTree::clear() {
@@ -43,9 +44,10 @@ mathsimd::float2 gravity::BH_QuadTree::traverse(mathsimd::float2 pos) {
         auto i = _traversal.back();
         _traversal.pop_back();
         if (nodes[i].isEmpty()) continue;
-
         auto dir = nodes[i].centre - pos;
-        float inv_d_sqr = 1.f / dir.sqrMagnitude();
+        auto d_sqr = dir.sqrMagnitude();
+        if (d_sqr < mathsimd::EPSILON_F*mathsimd::EPSILON_F) continue;
+        float inv_d_sqr = 1.f / d_sqr;
         float theta_sqr = (nodes[i].box.max - nodes[i].box.min).sqrMagnitude() * inv_d_sqr;
 
         if (nodes[i].isExternal() || theta_sqr < SqrTheta) {

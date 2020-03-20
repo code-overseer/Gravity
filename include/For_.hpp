@@ -5,8 +5,7 @@
 namespace gravity {
     template<class F, int... Is>
     void for_(F func, std::integer_sequence<int, Is...>) {
-        using expander = int[];
-        (void) expander{0, ((void) func(std::integral_constant<decltype(Is), Is>{}), 0)...};
+        (func(std::integral_constant<decltype(Is), Is>{}), ...);
     }
 
     template<int N, typename F>

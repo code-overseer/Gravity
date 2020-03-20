@@ -2,17 +2,26 @@
 #define GRAVITY_SYSTEM_HPP
 
 #include <entt/entt.hpp>
-namespace gravity::systems {
-    class System {
-    protected:
-        explicit System(entt::registry* reg) : _registry(reg) {}
-        System(System && other) noexcept : _registry(std::move(other._registry)) { other._registry = nullptr; }
-        entt::registry* _registry = nullptr;
-    public:
-        virtual ~System() { _registry = nullptr; }
-        virtual void update(float delta) = 0;
-    };
+
+namespace gravity {
+    class World;
+
+    namespace systems {
+        class System {
+        private:
+            World& _world;
+        protected:
+            System(World& w) : _world(w) {}
+            World& world() { return _world; }
+        public:
+            virtual ~System() {}
+            System(System const&) = delete;
+            virtual void update(float delta) = 0;
+        };
+    }
 }
+
+
 
 
 #endif //GRAVITY_SYSTEM_HPP

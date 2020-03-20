@@ -33,22 +33,21 @@ namespace gravity {
             [[nodiscard]] inline bool isEmpty() const { return !(0u ^ mass.bits); }
             [[nodiscard]] inline bool isExternal() const { return first_child < 0; }
         };
+    private:
+        std::vector<int> _traversal;
+    public:
         std::vector<BH_Node> nodes;
         float const SqrTheta;
+
         BH_QuadTree(BH_QuadTree const& other) = delete;
         BH_QuadTree(BH_QuadTree&& other) noexcept : SqrTheta(other.SqrTheta), nodes(std::move(other.nodes)) {}
         BH_QuadTree(float t_sqr, AABB aabb, unsigned int count) : SqrTheta(t_sqr) {
             nodes.reserve(count);
             nodes.emplace_back(std::move(aabb));
         }
-
         void insert(const mathsimd::float2& pos, float mass);
-
         void clear();
-
         mathsimd::float2 traverse(mathsimd::float2 pos);
-    private:
-        std::vector<int> _traversal;
     };
 }
 
