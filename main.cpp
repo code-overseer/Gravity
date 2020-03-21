@@ -51,7 +51,7 @@ static void test_collision() {
 
 static void runApp() {
     using namespace std::chrono;
-    gravity::World::Default();
+    gravity::World::Default(); // initializer
     launch_app();
     bool u = true;
     auto timer = high_resolution_clock::now();
@@ -59,7 +59,7 @@ static void runApp() {
     bool rendered = false;
 
     while (u) {
-        gravity::World::Default().update(static_cast<float>(rendered) * static_cast<float>(predraw_time + event_time + render_time));
+        auto f = gravity::World::Default().update(static_cast<float>(rendered) * static_cast<float>(predraw_time + event_time + render_time));
 
         rendered = duration<double>(high_resolution_clock::now() - timer).count() > 0.0166;
         if (!rendered) continue;
@@ -74,7 +74,6 @@ static void runApp() {
         t = high_resolution_clock::now();
         update_view(&u);
         render_time = duration<double>(high_resolution_clock::now() - t).count();
-
     }
 }
 

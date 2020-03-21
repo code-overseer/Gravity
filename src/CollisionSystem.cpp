@@ -8,10 +8,42 @@ gravity::systems::CollisionSystem::CollisionSystem(gravity::World &w, int grid_w
 void gravity::systems::CollisionSystem::update(float delta) {
     _prepareGrid();
     _findCollisions();
+
+    using namespace gravity::components;
+    auto& reg = world().registry();
+    auto v_bh = reg.view<BlackHole>();
+    auto view = reg.view<Mass, Position, Velocity, CircleCollider>();
+    for (auto const& bh : v_bh) {
+        if (!reg.valid(bh)) continue;
+        auto pos = view.get<Position>(bh);
+        auto r = view.get<CircleCollider>(bh);
+        auto &result = _grid.query(r.toAABB(pos.val));
+        auto& mass = view.get<Mass>(bh);
+        auto& vel = view.get<Velocity>(bh);
+        auto m = mass.val;
+        auto p = m * vel.val;
+
+        for (auto & entity_b : result) {
+            if (!reg.valid(entity_b)) continue;
+            auto R_b = view.get<CircleCollider>(entity_b);
+            auto R_sqr = (r.radius + R_b.radius) * 1.005f;
+            auto pos_b = view.get<Position>(entity_b);
+            R_sqr *= R_sqr;
+            if (entity_b == bh || (pos.val - pos_b.val).sqrMagnitude() > R_sqr) continue;
+            auto mb = view.get<Mass>(entity_b).val;
+            m += mb;
+            p = p + (mb * view.get<Velocity>(entity_b).val);
+            reg.destroy(entity_b);
+        }
+        mass.val = m;
+        vel.val = p / m;
+
+    }
 }
 
 void gravity::systems::CollisionSystem::_prepareGrid() {
     using namespace gravity::components;
+    _grid.clear();
     auto view = world().registry().view<Position, CircleCollider>();
     view.each([this](entt::entity const& e, Position const& p, CircleCollider const& r){
         _grid.add(e, p.val, r);
@@ -22,7 +54,7 @@ void gravity::systems::CollisionSystem::_prepareGrid() {
 void gravity::systems::CollisionSystem::_findCollisions() {
     using namespace gravity::components;
     auto view = world().registry().view<Position, Mass, CircleCollider, Velocity, Acceleration, Restitution>();
-    for (auto entity_a : view) {
+    for (auto const &entity_a : view) {
         auto pos_a = view.get<Position>(entity_a);
         auto R_a = view.get<CircleCollider>(entity_a);
         auto const &result = _grid.query(R_a.toAABB(pos_a.val));
@@ -64,7 +96,5 @@ void gravity::systems::CollisionSystem::_findCollisions() {
             }
         }
     }
-    _grid.clear();
-    world().registry().view<Checked>().each([](Checked &c) { c.val = false; });
 }
 

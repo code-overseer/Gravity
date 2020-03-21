@@ -2,7 +2,9 @@
 #define GRAVITY_COMPONENTS_HPP
 #include <mathsimd.hpp>
 #include "AABB.hpp"
+#include <entt/entt.hpp>
 namespace gravity::components {
+    typedef entt::tag<2000> BlackHole;
     struct Position {
         mathsimd::float2 val{0,0};
         Position(mathsimd::float2 const &x) : val(x) {};

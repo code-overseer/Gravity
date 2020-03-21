@@ -9,7 +9,8 @@
 #include <memory>
 #include <chrono>
 #include "AABB.hpp"
-#include "RenderSystem.hpp"
+#include "Camera.hpp"
+
 
 namespace gravity::systems {
     class System;
@@ -33,14 +34,12 @@ namespace gravity {
         Camera _mainCamera;
         decltype(std::chrono::high_resolution_clock::now()) _updateTimer;
         decltype(std::chrono::high_resolution_clock::now()) _predrawTimer;
-        bool _interruptFlag = false;
         SimulationSystemGroup _simulation;
         PresentationSystemGroup _presentation;
     public:
         World(World const&) = delete;
         ~World();
         static World& Default() { return _instance(); }
-        void interrupt() { _interruptFlag = true; }
         float update(float delta_dt = 0);
         float predraw(float delta_dt = 0);
         tf::Executor& executor() { return _executor; }

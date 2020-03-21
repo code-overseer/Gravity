@@ -36,6 +36,8 @@ namespace gravity {
         }
 
         [[nodiscard]] inline mathsimd::float2 centre() const { return min + 0.5f * (max - min); }
+
+        [[nodiscard]] inline mathsimd::float2 size() const { return max - min; }
     };
 }
 

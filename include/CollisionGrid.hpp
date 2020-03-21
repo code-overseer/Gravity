@@ -58,7 +58,7 @@ namespace gravity {
             return *this;
         }
         void add(entt::entity const &e, mathsimd::float2 const &pos, components::CircleCollider const&radius);
-        [[nodiscard]] std::vector<entt::entity> const& query(AABB const& box);
+        [[nodiscard]] std::vector<entt::entity> & query(AABB const& box);
         void flushLooseCells();
         void clear();
     private:

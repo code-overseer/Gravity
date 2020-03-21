@@ -58,7 +58,7 @@ void CollisionGrid::clear() {
     _looseCells.resize(_width * _height, LooseCell());
 }
 
-std::vector<entt::entity> const& CollisionGrid::query(AABB const &box) {
+std::vector<entt::entity> & CollisionGrid::query(AABB const &box) {
     _queryResult.clear();
     if (!_world.contains(box.max) || !_world.contains(box.min)) return _queryResult;
     auto tr = getIndex(box.max,_world, static_cast<float>(_width), static_cast<float>(_height));
