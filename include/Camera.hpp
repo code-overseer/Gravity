@@ -38,7 +38,7 @@ namespace gravity {
         [[nodiscard]] float rcp_aspect() const { return rcp_aspect_; }
         [[nodiscard]] mathsimd::float2 position() const { return position_; }
         void zoom(float z) { zoom_ = z; }
-        void rcp_aspect(float a) { rcp_aspect_ = a; }
+        void set_aspect_ratio(float w, float h) { rcp_aspect_ = h / w; }
         void position(mathsimd::float2 const &p) { position_ = p; }
     };
 }

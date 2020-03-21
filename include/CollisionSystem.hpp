@@ -17,7 +17,7 @@ namespace gravity::systems{
         void _prepareGrid();
         std::vector<std::pair<entt::entity,entt::entity>> _collisions;
         void _findCollisions();
-        void _collide();
+
         friend class gravity::World;
         CollisionSystem(gravity::World& w, int grid_width, int grid_height, int particles);
     public:

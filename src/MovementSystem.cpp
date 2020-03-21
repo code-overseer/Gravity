@@ -30,7 +30,6 @@ gravity::systems::MovementSystem::MovementSystem(gravity::World& w) : System(w) 
 void gravity::systems::MovementSystem::update(float delta) {
     using namespace gravity::components;
     auto view = world().registry().view<Position, const Velocity, const Acceleration>();
-
     for (auto entity : view) {
         auto& pos = view.get<Position>(entity);
         auto vel = view.get<const Velocity>(entity);

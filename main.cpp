@@ -32,15 +32,19 @@ static void tests() {
 
 static void runApp() {
     using namespace std::chrono;
-    static gravity::Renderer r = gravity::Renderer();
+    gravity::World::Default();
     launch_app();
     bool u = true;
     auto now = high_resolution_clock::now();
+
     while (u) {
+        auto t = high_resolution_clock::now();
+        process_event(&u);
+        if (duration<double>(high_resolution_clock::now() - t).count() > 0.0166f) gravity::World::Default().interrupt();
         gravity::World::Update();
         if (duration<double>(high_resolution_clock::now() - now).count() < 0.0166) continue;
         now = high_resolution_clock::now();
-        gravity::World::PreDraw(r);
+        gravity::World::PreDraw();
         update_view(&u);
     }
 }

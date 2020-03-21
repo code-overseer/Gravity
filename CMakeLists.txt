@@ -20,8 +20,8 @@ add_executable(${PROJECT_NAME} main.cpp
         include/Camera.hpp
         include/Mesh.hpp
         src/Mesh.cpp
-        src/Renderer.cpp
-        include/Renderer.hpp
+        src/RenderSystem.cpp
+        include/RenderSystem.hpp
         include/Utils.hpp
         include/CollisionGrid.hpp
         src/CollisionGrid.cpp
@@ -34,7 +34,7 @@ add_executable(${PROJECT_NAME} main.cpp
         include/WallSystem.hpp
         include/For_.hpp
         src/GravitySystem.cpp
-        include/GravitySystem.hpp)
+        include/GravitySystem.hpp src/CameraControlSystem.cpp include/CameraControlSystem.hpp)
 
 target_link_libraries(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/libViewer.a
         "-framework Cocoa"

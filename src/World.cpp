@@ -4,41 +4,33 @@
 #include "../include/MovementSystem.hpp"
 #include "../include/WallSystem.hpp"
 #include "../include/GravitySystem.hpp"
-#include "../include/For_.hpp"
 #include <vector>
 #include <unordered_map>
 #include <chrono>
 
 void gravity::World::update() {
     using namespace std::chrono;
-    static auto timer = high_resolution_clock::now();
-    auto deltaTime = duration<double>(high_resolution_clock::now() - timer).count();
-    timer = high_resolution_clock::now();
+    auto deltaTime = duration<double>(high_resolution_clock::now() - _updateTimer).count();
+    _updateTimer = high_resolution_clock::now();
 
+    if (_interruptFlag) { deltaTime = 0; _interruptFlag = false; }
     for (auto &system : _systems) { system->update(deltaTime); }
 }
 
-void gravity::World::preDraw(Renderer & renderer) {
-    // update camera
-    renderer.updateCamera(_mainCamera);
+void gravity::World::draw() {
+    using namespace std::chrono;
+    using namespace systems;
+
+    auto deltaTime = duration<double>(high_resolution_clock::now() - _drawTimer).count();
+    _drawTimer = high_resolution_clock::now();
+    if (_interruptFlag) { deltaTime = 0; _interruptFlag = false; }
     // update local to worlds components
     // cull w/ Circle collider
-    _registry.view<components::Position, components::CircleCollider, components::LocalToWorld>().each([](components::Position const&pos,
-                                                                                                         components::CircleCollider const& col, components::LocalToWorld& ltw) {
-        ltw = components::LocalToWorld::fromPositionAndRadius(pos.val, col.radius);
-    });
     // update ltw buffer
-    auto& ltw = renderer.localToWorlds_[renderer._buffer_idx];
-    auto v = _registry.view<components::LocalToWorld>();
-    if (ltw.isEmpty()) {
-        ltw = Renderer::mallocBuffer(renderer._device, v.raw(), v.size()*sizeof(components::LocalToWorld), mtl_cpp::Managed);
-    } else {
-        ltw.copy(v.raw(), v.size()*sizeof(components::LocalToWorld));
-    }
-    renderer._instanceCount = v.size();
+    _renderer->update(deltaTime);
 }
 
-gravity::World::World() : _bounds{-4000,-4000,4000,4000}, _registry(), _executor() {
+gravity::World::World() : _bounds{-4000,-4000,4000,4000}, _registry(), _executor(), _renderer(new systems::RenderSystem(*this)) {
     using namespace components;
     using namespace systems;
     using namespace mathsimd;
@@ -68,9 +60,11 @@ gravity::World::World() : _bounds{-4000,-4000,4000,4000}, _registry(), _executor
     _systems.emplace_back(new GravitySystem(*this, _registry.size(), 0.0005f));
     _systems.emplace_back(new CollisionSystem(*this, 80, 80, _registry.size()));
     _systems.emplace_back(new WallSystem(*this));
-
+    _updateTimer = std::chrono::high_resolution_clock::now();
+    _drawTimer = std::chrono::high_resolution_clock::now();
 }
 
 gravity::World::~World() {
     _systems.clear();
+    delete _renderer;
 }

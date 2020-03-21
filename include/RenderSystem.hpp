@@ -1,15 +1,18 @@
-#ifndef GRAVITY_RENDERER_HPP
-#define GRAVITY_RENDERER_HPP
+#ifndef GRAVITY_RENDERSYSTEM_HPP
+#define GRAVITY_RENDERSYSTEM_HPP
 #include <Metal_API.h>
 #include <mathsimd.hpp>
-#include "Camera.hpp"
 #include <cstdint>
 #include <dispatch/dispatch.h>
-namespace gravity {
-    struct Renderer : mtl_cpp::Metal_API {
+#include <functional>
+#include "Camera.hpp"
+#include "System.hpp"
+
+namespace gravity::systems {
+    struct RenderSystem : mtl_cpp::Metal_API, System {
         struct camera_t {
             mathsimd::float4x4 view, projection;
-            camera_t(Camera const& cam) : view(cam.view()), projection(cam.projection()) {} // NOLINT(google-explicit-constructor)
+            explicit camera_t(Camera const& cam) : view(cam.view()), projection(cam.projection()) {}
         };
     private:
         static constexpr uint8_t BUFFER_SIZE = 3;
@@ -20,15 +23,16 @@ namespace gravity {
         mtl_cpp::Buffer _camera[BUFFER_SIZE];
         uint8_t _buffer_idx = 0;
         uint32_t _instanceCount = 0;
-
         mtl_cpp::Device _device;
         mtl_cpp::Library _lib;
         mtl_cpp::CommandQueue _queue;
         mtl_cpp::Texture _sampling;
         mtl_cpp::RenderPipelineState _shader;
         std::string _shaderCode;
+
+        friend class gravity::World;
+        RenderSystem(gravity::World &w);
     public:
-        Renderer();
 
         void onInitialize(void* view) override;
 
@@ -36,12 +40,10 @@ namespace gravity {
 
         void onSizeChange(void* view, unsigned long const size[2]) override;
 
-        void updateCamera(Camera const& cam);
-
-        friend class World;
+        void update(float delta) override;
 
     };
 }
 
 
-#endif //GRAVITY_RENDERER_HPP
+#endif //GRAVITY_RENDERSYSTEM_HPP

@@ -69,23 +69,3 @@ void gravity::systems::CollisionSystem::_findCollisions() {
     world().registry().view<Checked>().each([](Checked &c) { c.val = false; });
 }
 
-void gravity::systems::CollisionSystem::_collide() {
-    using namespace gravity::components;
-    auto view = world().registry().view<Position, Mass, Velocity, Restitution>();
-    for (auto const& collision : _collisions) {
-        auto cr = 0.5f * (view.get<Restitution>(collision.first).val + view.get<Restitution>(collision.second).val);
-        auto dir = (view.get<Position>(collision.first).val - view.get<Position>(collision.second).val).normalized();
-        auto& vel_a = view.get<Velocity>(collision.first);
-        auto& vel_b = view.get<Velocity>(collision.second);
-        auto ua = dot(dir, vel_a.val) * dir;
-        auto ub = dot(dir, vel_b.val) * dir;
-
-        auto ma = view.get<Mass>(collision.first).val;
-        auto mb = view.get<Mass>(collision.second).val;
-        auto inv_sum = 1.0 / (ma + mb);
-        auto va = inv_sum * (cr * mb *(ub - ua) + ma * ua + mb * ub);
-        auto vb = inv_sum * (cr * ma * (ua - ub) + ma * ua + mb * ub);
-        vel_a.val = vel_a.val - ua + va;
-        vel_b.val = vel_b.val - ub + vb;
-    }
-}
