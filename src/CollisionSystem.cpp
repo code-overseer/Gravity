@@ -2,8 +2,7 @@
 #include "../include/components.hpp"
 #include "../include/CollisionSystem.hpp"
 
-gravity::systems::CollisionSystem::CollisionSystem(gravity::World &w, int grid_width, int grid_height,
-                                                   int particles)  : System(w),
+gravity::systems::CollisionSystem::CollisionSystem(gravity::World &w, int grid_width, int grid_height, int particles) : System(w),
                                                                      _grid(w.bounds(), grid_width, grid_height, particles) {}
 
 void gravity::systems::CollisionSystem::update(float delta) {

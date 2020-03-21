@@ -18,6 +18,8 @@ namespace gravity::systems {
 namespace gravity {
 
     struct World {
+        typedef std::vector<std::unique_ptr<gravity::systems::System>> SimulationSystemGroup;
+        typedef std::vector<std::unique_ptr<gravity::systems::System>> PresentationSystemGroup;
     private:
         World();
         static World& _instance() {
@@ -30,19 +32,17 @@ namespace gravity {
         const AABB _bounds;
         Camera _mainCamera;
         decltype(std::chrono::high_resolution_clock::now()) _updateTimer;
-        decltype(std::chrono::high_resolution_clock::now()) _drawTimer;
+        decltype(std::chrono::high_resolution_clock::now()) _predrawTimer;
         bool _interruptFlag = false;
-        std::vector<std::unique_ptr<gravity::systems::System>> _systems;
-        systems::RenderSystem* _renderer = nullptr;
+        SimulationSystemGroup _simulation;
+        PresentationSystemGroup _presentation;
     public:
         World(World const&) = delete;
         ~World();
         static World& Default() { return _instance(); }
         void interrupt() { _interruptFlag = true; }
-        void update();
-        void draw();
-        static void Update() { _instance().update(); }
-        static void PreDraw() { _instance().draw(); }
+        float update(float delta_dt = 0);
+        float predraw(float delta_dt = 0);
         tf::Executor& executor() { return _executor; }
         entt::registry& registry() { return _registry; }
         AABB const& bounds() { return _bounds; }

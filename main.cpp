@@ -30,25 +30,6 @@ static void tests() {
     }
 }
 
-static void runApp() {
-    using namespace std::chrono;
-    gravity::World::Default();
-    launch_app();
-    bool u = true;
-    auto now = high_resolution_clock::now();
-
-    while (u) {
-        auto t = high_resolution_clock::now();
-        process_event(&u);
-        if (duration<double>(high_resolution_clock::now() - t).count() > 0.0166f) gravity::World::Default().interrupt();
-        gravity::World::Update();
-        if (duration<double>(high_resolution_clock::now() - now).count() < 0.0166) continue;
-        now = high_resolution_clock::now();
-        gravity::World::PreDraw();
-        update_view(&u);
-    }
-}
-
 static void test_collision() {
     using namespace gravity;
     auto pos = BH_Tests::generate_positions();
@@ -66,6 +47,35 @@ static void test_collision() {
         grid.clear();
     }
     printf("Sequential Time: %f us\n", seq_time / BH_Tests::TESTS);
+}
+
+static void runApp() {
+    using namespace std::chrono;
+    gravity::World::Default();
+    launch_app();
+    bool u = true;
+    auto timer = high_resolution_clock::now();
+    double event_time = 0, predraw_time = 0, render_time = 0;
+    bool rendered = false;
+
+    while (u) {
+        gravity::World::Default().update(static_cast<float>(rendered) * static_cast<float>(predraw_time + event_time + render_time));
+
+        rendered = duration<double>(high_resolution_clock::now() - timer).count() > 0.0166;
+        if (!rendered) continue;
+        timer = high_resolution_clock::now();
+
+        predraw_time = gravity::World::Default().predraw(static_cast<float>(event_time + render_time));
+
+        auto t = high_resolution_clock::now();
+        process_event(&u);
+        event_time = duration<double>(high_resolution_clock::now() - t).count();
+
+        t = high_resolution_clock::now();
+        update_view(&u);
+        render_time = duration<double>(high_resolution_clock::now() - t).count();
+
+    }
 }
 
 int main() {

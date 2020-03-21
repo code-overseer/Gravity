@@ -8,29 +8,29 @@
 #include <unordered_map>
 #include <chrono>
 
-void gravity::World::update() {
+float gravity::World::update(float delta_dt) {
     using namespace std::chrono;
-    auto deltaTime = duration<double>(high_resolution_clock::now() - _updateTimer).count();
+
+    auto deltaTime = std::clamp(duration<double>(high_resolution_clock::now() - _updateTimer).count() - delta_dt, 0.0, 1.0);
     _updateTimer = high_resolution_clock::now();
 
-    if (_interruptFlag) { deltaTime = 0; _interruptFlag = false; }
-    for (auto &system : _systems) { system->update(deltaTime); }
+    for (auto &system : _simulation) { system->update(deltaTime); }
+
+    return std::clamp(duration<double>(high_resolution_clock::now() - _updateTimer).count(), 0.0, 1.0);;
 }
 
-void gravity::World::draw() {
+float gravity::World::predraw(float delta_dt) {
     using namespace std::chrono;
-    using namespace systems;
 
-    auto deltaTime = duration<double>(high_resolution_clock::now() - _drawTimer).count();
-    _drawTimer = high_resolution_clock::now();
-    if (_interruptFlag) { deltaTime = 0; _interruptFlag = false; }
-    // update local to worlds components
-    // cull w/ Circle collider
-    // update ltw buffer
-    _renderer->update(deltaTime);
+    auto deltaTime = std::clamp(duration<double>(high_resolution_clock::now() - _predrawTimer).count() - delta_dt, 0.0, 1.0);
+    _predrawTimer = high_resolution_clock::now();
+
+    for (auto &system : _presentation) system->update(deltaTime);
+
+    return std::clamp(duration<double>(high_resolution_clock::now() - _predrawTimer).count(), 0.0, 1.0);
 }
 
-gravity::World::World() : _bounds{-4000,-4000,4000,4000}, _registry(), _executor(), _renderer(new systems::RenderSystem(*this)) {
+gravity::World::World() : _bounds{-4000,-4000,4000,4000}, _registry(), _executor() {
     using namespace components;
     using namespace systems;
     using namespace mathsimd;
@@ -56,15 +56,18 @@ gravity::World::World() : _bounds{-4000,-4000,4000,4000}, _registry(), _executor
         ++i;
     }
 
-    _systems.emplace_back(new MovementSystem(*this));
-    _systems.emplace_back(new GravitySystem(*this, _registry.size(), 0.0005f));
-    _systems.emplace_back(new CollisionSystem(*this, 80, 80, _registry.size()));
-    _systems.emplace_back(new WallSystem(*this));
+    _simulation.emplace_back(new MovementSystem(*this));
+    _simulation.emplace_back(new GravitySystem(*this, _registry.size(), 0.0005f));
+    _simulation.emplace_back(new CollisionSystem(*this, 80, 80, _registry.size()));
+    _simulation.emplace_back(new WallSystem(*this));
+
+    _presentation.emplace_back(new RenderSystem(*this));
     _updateTimer = std::chrono::high_resolution_clock::now();
-    _drawTimer = std::chrono::high_resolution_clock::now();
+    _predrawTimer = std::chrono::high_resolution_clock::now();
+
+    assert(dynamic_cast<RenderSystem*>(_presentation.back().get()));
 }
 
 gravity::World::~World() {
-    _systems.clear();
-    delete _renderer;
+    _simulation.clear();
 }
